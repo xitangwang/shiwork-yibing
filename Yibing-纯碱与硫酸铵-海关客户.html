@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Yibing · 纯碱与硫酸铵 AI 获客演示</title><style>
+:root{
+  --paper:#F4F1EA; --paper2:#ECE7DC; --ink:#1D1B17; --muted:#6B655B; --faint:#A39C8F; --rule:#D9D3C7;
+  --accent:#B4462B; --accent-soft:#EBD3C9; --b:#4A5A6A; --c:#B9B2A5;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC",Georgia,serif;
+  --sans:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+a{color:inherit}
+header{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:28px;padding:0 36px;border-bottom:1px solid var(--rule);background:var(--paper);z-index:10}
+header .brand{font-family:var(--serif);font-size:17px;letter-spacing:.04em;white-space:nowrap}
+header nav{display:flex;gap:4px;flex:1;overflow:auto}
+header nav button{border:0;background:none;padding:6px 10px;color:var(--faint);font-size:13px;white-space:nowrap;border-radius:3px}
+header nav button.on{color:var(--ink);background:var(--paper2)}
+header nav button .n{font-family:var(--mono);margin-right:6px}
+header .ctl{display:flex;gap:6px}
+header .ctl button{border:1px solid var(--rule);background:none;width:34px;height:30px;border-radius:3px;color:var(--muted)}
+main{position:absolute;top:56px;left:0;right:0;bottom:0}
+section.stage{position:absolute;inset:0;padding:40px 56px 36px;display:none;overflow:auto}
+section.stage.on{display:block;animation:fade .45s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1,h2{font-family:var(--serif);font-weight:600;letter-spacing:.01em;margin:0}
+h2{font-size:30px;margin-bottom:6px}
+.kicker{font-size:13px;color:var(--muted);letter-spacing:.08em;margin-bottom:10px}
+.sub{color:var(--muted);font-size:15px;max-width:760px;line-height:1.7;text-wrap:pretty}
+.next{margin-top:26px;border:0;background:var(--ink);color:var(--paper);padding:11px 20px;border-radius:3px;font-size:14px}
+.ghost{border:1px solid var(--rule);background:none;padding:7px 14px;border-radius:3px;font-size:13px;color:var(--muted)}
+.mono{font-family:var(--mono)}
+.grade{display:inline-block;font-family:var(--mono);font-size:12px;padding:1px 7px;border-radius:2px;border:1px solid currentColor}
+.grade.A{color:var(--accent)} .grade.B{color:var(--b)} .grade.C{color:var(--faint)}
+
+/* 0 开场 */
+#s0{display:none;align-items:center;justify-content:center}
+#s0.on{display:flex}
+.open{max-width:820px;width:100%}
+.open h1{font-size:54px;line-height:1.25;margin:8px 0 28px}
+.ask{display:flex;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.ask input{flex:1;border:0;background:none;font-family:var(--serif);font-size:28px;outline:none;color:var(--ink)}
+.ask input::placeholder{color:var(--faint)}
+.ask button{border:0;background:none;font-size:15px;color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chip{border:1px solid var(--rule);background:#FAF8F3;padding:9px 14px;border-radius:3px;font-size:14px;text-align:left}
+.chip small{display:block;color:var(--faint);font-size:12px;margin-top:2px}
+.chip:hover{border-color:var(--ink)}
+.hint{margin-top:22px;font-size:13px;color:var(--faint);line-height:1.7}
+.hint b{color:var(--accent);font-weight:500}
+
+/* 1 运行 */
+.run{display:grid;grid-template-columns:minmax(360px,1fr) 1.25fr;gap:40px;margin-top:24px}
+.counters{display:flex;gap:40px;margin-top:20px}
+.counter b{display:block;font-family:var(--serif);font-size:44px;font-weight:600;line-height:1}
+.counter span{font-size:13px;color:var(--muted)}
+.log{list-style:none;margin:0;padding:0}
+.log li{padding:11px 0;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.6;opacity:0;transform:translateY(4px);transition:all .35s}
+.log li.show{opacity:1;transform:none}
+.log li .t{font-family:var(--mono);font-size:12px;color:var(--faint);margin-right:10px}
+.log li .why{display:block;color:var(--muted);font-size:13px;margin-left:46px}
+.feed{border:1px solid var(--rule);background:#FAF8F3;height:520px;overflow:hidden;position:relative}
+.feed .hd,.feed .row{display:grid;grid-template-columns:92px 1.3fr 1.6fr 70px;gap:12px;padding:8px 14px;font-size:12px}
+.feed .hd{color:var(--faint);border-bottom:1px solid var(--rule);letter-spacing:.05em}
+.feed .row{font-family:var(--mono);border-bottom:1px dashed var(--rule);animation:in .3s ease}
+.feed .row .p{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed .row .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes in{from{background:var(--accent-soft)}to{background:transparent}}
+.feed .src{position:absolute;bottom:0;left:0;right:0;padding:8px 14px;font-size:12px;color:var(--faint);background:linear-gradient(transparent,#FAF8F3 40%)}
+
+/* 2 网络 */
+.net{display:grid;grid-template-columns:1fr 340px;gap:28px;margin-top:14px;height:calc(100% - 92px);min-height:560px}
+.net svg{width:100%;height:100%}
+.net .side{overflow:auto;border-left:1px solid var(--rule);padding-left:24px}
+.side h3{font-family:var(--serif);font-size:18px;margin:4px 0 10px}
+.side p,.side li{font-size:14px;line-height:1.65;color:var(--ink)}
+.side ul{padding-left:18px;margin:6px 0 16px}
+.side .muted{color:var(--muted)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin:10px 0 18px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.node{cursor:pointer;transition:opacity .3s}
+.dim{opacity:.13}
+.lbl{font-size:11px;fill:var(--ink);pointer-events:none;paint-order:stroke;stroke:var(--paper);stroke-width:3px}
+.clbl{font-family:var(--serif);font-size:14px;font-weight:600;pointer-events:none;paint-order:stroke;stroke:var(--paper);stroke-width:4px}
+
+/* 3 分类 */
+.segs{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:26px;border-top:1px solid var(--ink)}
+.seg{padding:20px 22px 22px 0;border-bottom:1px solid var(--rule)}
+.seg:not(:nth-child(3n)){border-right:1px solid var(--rule);margin-right:0}
+.seg:nth-child(3n+2),.seg:nth-child(3n){padding-left:22px}
+.seg h3{font-family:var(--serif);font-size:20px;margin:0 0 4px}
+.seg .stat{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px}
+.seg p{font-size:13.5px;line-height:1.7;color:var(--muted);margin:0 0 12px;text-wrap:pretty}
+.seg .who{display:flex;flex-wrap:wrap;gap:6px}
+.seg .who span{font-size:12px;padding:2px 8px;border:1px solid var(--rule);border-radius:2px;background:#FAF8F3}
+.seg .who span.A{border-color:var(--accent);color:var(--accent)}
+.seg .who span.hit{background:var(--accent-soft)}
+.take{margin-top:22px;font-family:var(--serif);font-size:20px;line-height:1.6;max-width:900px}
+.take em{font-style:normal;color:var(--accent)}
+
+/* 4 卡片 */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;margin-top:24px}
+.card{background:#FAF8F3;border:1px solid var(--rule);padding:20px 22px;display:flex;flex-direction:column}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.card h3{font-family:var(--serif);font-size:20px;margin:0}
+.card .meta{font-size:12px;color:var(--muted);margin:4px 0 12px}
+.card .reasons{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.card .reasons span{font-size:11.5px;color:var(--accent);background:var(--accent-soft);padding:2px 7px;border-radius:2px}
+.card dl{margin:0;font-size:13.5px;line-height:1.65}
+.card dt{color:var(--faint);font-size:12px;margin-top:9px}
+.card dd{margin:0}
+.card .ev{margin-top:14px;padding-top:10px;border-top:1px dashed var(--rule);font-size:12px;color:var(--muted);line-height:1.7}
+.card .ev a{color:var(--muted)}
+.card .go{margin-top:14px;align-self:flex-start}
+.tag-me{font-size:11px;color:var(--paper);background:var(--ink);padding:1px 6px;border-radius:2px;margin-right:8px}
+.grade{white-space:nowrap}
+
+/* 5 开发信 */
+.letter{display:grid;grid-template-columns:220px 300px 1fr;gap:30px;margin-top:22px}
+.pick button{display:block;width:100%;text-align:left;border:0;border-left:2px solid transparent;background:none;padding:8px 12px;font-size:14px;color:var(--muted)}
+.pick button.on{border-left-color:var(--accent);color:var(--ink);background:var(--paper2)}
+.facts h3{font-size:13px;color:var(--faint);font-weight:500;letter-spacing:.06em;margin:0 0 8px}
+.facts ul{margin:0 0 20px;padding-left:18px;font-size:14px;line-height:1.7}
+.facts p{font-size:14px;line-height:1.7;margin:0 0 20px}
+.paper{background:#fff;border:1px solid var(--rule);padding:28px 34px;font-family:Georgia,"Times New Roman",serif;font-size:15.5px;line-height:1.75;white-space:pre-wrap;min-height:420px;box-shadow:0 1px 0 var(--rule)}
+.paper .subj{font-family:var(--sans);font-size:13px;color:var(--muted);margin-bottom:16px;white-space:normal}
+.paper .ph{background:var(--accent-soft);color:var(--accent);padding:0 4px;border-radius:2px;font-family:var(--sans);font-size:13px}
+.paper .cur{display:inline-block;width:7px;height:17px;background:var(--accent);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.note{font-size:12px;color:var(--faint);margin-top:10px;line-height:1.6}
+
+/* 6 对比 */
+.funnel{display:flex;align-items:flex-end;gap:0;margin-top:30px;border-bottom:1px solid var(--ink)}
+.funnel div{flex:1;padding:0 10px 12px;border-left:1px solid var(--rule)}
+.funnel div:first-child{border-left:0;padding-left:0}
+.funnel b{display:block;font-family:var(--serif);font-size:38px;font-weight:600;line-height:1.1}
+.funnel span{font-size:12.5px;color:var(--muted);line-height:1.5;display:block}
+.funnel div.hl b{color:var(--accent)}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:40px}
+.vs h3{font-family:var(--serif);font-size:19px;margin:0 0 14px}
+.bar{display:flex;align-items:center;gap:12px;margin:9px 0;font-size:13.5px}
+.bar .lab{width:220px;color:var(--muted)}
+.bar .v{height:14px;background:var(--b)}
+.bar .v.ai{background:var(--accent)}
+.bar .num{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.total{font-family:var(--serif);font-size:22px;margin:16px 0 4px}
+.total em{font-style:normal;color:var(--accent)}
+.need li{font-size:14.5px;line-height:1.75;margin-bottom:6px}
+.close{margin-top:36px;font-family:var(--serif);font-size:24px;line-height:1.6;max-width:980px}
+/* Yibing: progressive disclosure, real evidence, responsive presentation. */
+:root{--focus:#9a381f}button,input,select,textarea{font:inherit}input,select,textarea{color:var(--ink)}button:disabled{cursor:default;opacity:.4}button,a,input,select,summary{touch-action:manipulation}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:4px}[hidden]{display:none!important}a{text-underline-offset:3px}header{gap:16px;padding:0 28px}header .brand{font-size:15px}header nav button{padding:6px 8px;font-size:12px}header .ctl button{width:auto;min-width:32px;padding:0 9px}.route-select{border:0;background:var(--paper2);padding:6px 8px;font-size:12px;max-width:130px}.skip{position:fixed;top:-60px;left:10px;z-index:50;background:var(--paper);padding:10px}.skip:focus{top:4px}main{bottom:34px}.stage{scrollbar-gutter:stable}section.stage{padding:30px 48px 40px}.stage:focus{outline:none}.bottomline{position:fixed;bottom:0;left:0;right:0;height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-top:1px solid var(--rule);background:var(--paper);font-size:11px;color:var(--muted);z-index:10}.bottomline b{color:var(--accent);font-weight:500}.bottomline .progress{height:2px;position:absolute;top:-1px;left:0;background:var(--accent);transition:width .35s}h1,h2,h3{overflow-wrap:anywhere}.open{max-width:920px}.open h1{font-size:clamp(37px,4.7vw,62px);line-height:1.28}.open .lead{max-width:740px;font-size:17px;line-height:1.9;color:var(--muted);margin:0 0 28px}.open .intro-meta{display:flex;gap:22px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:15px 0;border-top:1px solid var(--rule)}.open .intro-meta b{color:var(--ink);font-family:var(--mono);font-size:17px;font-weight:500;margin-right:4px}.route-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:26px 0 20px}.route-card{text-align:left;border:1px solid var(--rule);background:#FAF8F3;padding:20px 22px;position:relative;transition:transform .2s,border-color .2s}.route-card:hover{transform:translateY(-3px);border-color:var(--accent)}.route-card h3{font-family:var(--serif);font-size:24px;margin:9px 0}.route-card p{font-size:13px;color:var(--muted);margin:0;line-height:1.8}.route-card .index{font-family:var(--mono);font-size:11px;color:var(--accent)}.route-card .arr{position:absolute;right:20px;top:24px;font-size:24px;color:var(--accent)}.intro-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.intro-actions .next{margin:0}.intro-actions .ghost{padding:11px 15px}.small-label{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.05em}.stagehead{display:flex;justify-content:space-between;align-items:start;gap:25px}.stagehead .sub{max-width:1000px}.stagehead .ghost{white-space:nowrap}.run{grid-template-columns:minmax(320px,1fr) 1.2fr;gap:35px}.counters{gap:36px}.counter b{font-size:42px}.feed{height:430px;padding-bottom:32px}.feed .hd,.feed .row{grid-template-columns:90px minmax(100px,1fr) minmax(120px,1.5fr) 76px;gap:10px}.feed .row{padding:11px 13px}.feed .row small{display:block;font:10px var(--sans);color:var(--muted);margin-top:5px}.feed .row .p{font-family:var(--sans);white-space:normal;max-height:42px;overflow:hidden;line-height:1.6}.feed .src{font-size:10px;background:#FAF8F3;border-top:1px solid var(--rule)}.log li{font-size:14px;padding:8px 0}.log li .why{font-size:12px;margin-left:36px;line-height:1.8}.run-status{margin-top:15px;font-size:12px;color:var(--muted)}.run-status span{color:var(--accent)}.stage-next{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:24px;flex-wrap:wrap}.stage-next .next{margin:0}.net{height:auto;min-height:0;grid-template-columns:minmax(0,1fr) 330px;align-items:start;margin-top:20px}.graphwrap{min-width:0;position:relative;border:1px solid var(--rule);background:#FAF8F3;padding:16px;overflow:auto}.net svg{display:block;width:100%;height:auto;max-width:100%;min-height:340px}.net .side{position:sticky;top:0;max-height:calc(100dvh - 225px);border-left:1px solid var(--rule);padding-left:20px;overflow:auto}.graph-legend{display:flex;gap:15px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:12px 0}.linekey{display:inline-block;width:22px;border-top:1px solid var(--muted);vertical-align:middle;margin-right:5px}.linekey.dashed{border-top-style:dashed}.segs{margin-top:24px}.seg h3{font-size:21px}.seg .who button{font-size:11px;padding:4px 7px;border:1px solid var(--rule);background:#FAF8F3;color:var(--muted);border-radius:2px}.seg .who button.A{color:var(--accent);border-color:var(--accent)}.seg .who button:hover{background:var(--accent-soft)}.seg .who{gap:6px}.take{font-size:18px}.filterrow{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:20px 0 12px}.filterrow label{font-size:11px;color:var(--muted)}.filterrow input,.filterrow select{display:block;border:1px solid var(--rule);background:#FAF8F3;padding:9px 11px;border-radius:3px;min-height:40px}.filterrow .search{flex:1;min-width:220px}.filterrow input{width:100%}.filterrow .ghost{min-height:40px}.grade-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 6px}.grade-tabs button{font-size:12px;border:1px solid var(--rule);color:var(--muted);background:none;padding:7px 12px;border-radius:3px}.grade-tabs button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}.grade-tabs button span{font-family:var(--mono);margin-left:6px}.cards{margin-top:18px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}.card{padding:19px 20px}.card h3{font-size:23px;line-height:1.4}.card .meta{line-height:1.75}.card .reasons span{color:var(--muted);background:var(--paper2)}.card .reasons span.hot{color:var(--accent);background:var(--accent-soft)}.card .compact{font-size:13px;line-height:1.85;color:var(--muted);margin:0 0 14px}.card dl{font-size:13px}.card dd{line-height:1.8}.card .actions{display:flex;gap:8px;margin-top:auto;padding-top:18px;flex-wrap:wrap}.card .ev{overflow-wrap:anywhere}.card .go{margin:0}.grade.D{color:var(--faint)}.empty{text-align:center;padding:50px;border:1px dashed var(--rule);color:var(--muted);grid-column:1/-1}.tipline{font-size:12px;color:var(--muted);line-height:1.8;margin-top:12px}.tipline b{color:var(--accent);font-weight:500}.letter{grid-template-columns:210px minmax(210px,.8fr) minmax(350px,1.3fr);gap:25px;margin-top:22px}.pick{max-height:calc(100dvh - 240px);overflow:auto}.pick button{font-size:12px;padding:10px 11px;line-height:1.55}.pick small{display:block;font-size:10px;color:var(--muted);margin-top:3px}.facts{min-width:0}.facts h3{font-size:11px}.facts ul,.facts p{font-size:12px;overflow-wrap:anywhere}.facts .contact-item{font-size:12px;padding:10px 0;border-top:1px solid var(--rule);overflow-wrap:anywhere}.facts .contact-item b{display:block;font-weight:500;margin-bottom:5px}.facts a{color:var(--accent)}.paper-tabs{display:flex;gap:7px;margin-bottom:10px}.paper-tabs button{font-size:12px;border:1px solid var(--rule);padding:7px 10px;background:none;color:var(--muted)}.paper-tabs button.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}.paper{font-family:var(--sans);font-size:14px;line-height:1.9;min-height:370px;padding:24px 27px;white-space:pre-wrap;overflow-wrap:anywhere}.paper.english{font-family:Georgia,'Times New Roman',serif;font-size:15px}.paper-actions{display:flex;gap:10px;align-items:center;margin-top:13px;flex-wrap:wrap}.paper-actions span{font-size:11px;color:var(--muted)}.note{color:var(--muted)}.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:38px;margin-top:30px}.summary-grid h3{font-family:var(--serif);font-size:21px;margin:0 0 15px}.summary-grid p,.summary-grid li{font-size:14px;line-height:1.9;color:var(--muted)}.summary-grid ul{padding-left:18px}.queue{display:flex;gap:9px;flex-wrap:wrap}.queue button{border:1px solid var(--rule);padding:9px 11px;background:#FAF8F3;font-size:12px}.downloads{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}.downloads a{text-decoration:none;display:inline-flex;align-items:center}.downloads .next{margin:0}.downloads .ghost{padding:11px 16px}.funnel{margin-top:25px}.funnel div{padding-bottom:17px}.funnel b{font-size:40px}.funnel small{font-size:11px;color:var(--faint);display:block;margin-top:4px}.close{font-size:22px;margin-top:25px}.detail-dialog{background:var(--paper);color:var(--ink);border:1px solid var(--rule);width:min(1060px,94vw);max-height:90dvh;padding:0;box-shadow:0 12px 55px #1d1b1724}.detail-dialog::backdrop{background:#1d1b1766}.dialoghead{display:flex;justify-content:space-between;gap:20px;padding:22px 28px;border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--paper);z-index:1}.dialoghead h2{font-size:25px;margin:6px 0}.dialoghead button{align-self:start;min-width:38px}.dialogbody{padding:24px 28px}.dialogmeta{font-size:12px;color:var(--muted);line-height:1.8}.dialoggrid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.dialogbody h3{font-family:var(--serif);font-size:19px;margin:0 0 12px}.dialogbody p,.dialogbody li{font-size:13px;line-height:1.85;overflow-wrap:anywhere}.dialogbody li+li{margin-top:6px}.dialogbody ul{padding-left:18px}.dialogbody .contact-item{margin-bottom:15px;border-bottom:1px dashed var(--rule);padding-bottom:12px}.dialogbody .contact-item p{font-size:11px;color:var(--muted);margin:5px 0}.dialogbody a{color:var(--accent)}.record{padding:18px 0;border-top:1px solid var(--rule)}.record .record-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.record .badge{font-size:10px;padding:3px 6px;background:var(--paper2)}.record .record-top b{font-family:var(--mono);font-size:13px}.record dl{display:grid;grid-template-columns:90px 1fr;gap:7px 12px;font-size:12px;line-height:1.8;overflow-wrap:anywhere}.record dt{color:var(--muted)}.record dd{margin:0}.record .limitations{font-size:11px;color:var(--muted)}.warning{border-left:2px solid var(--accent);background:#eee6da;padding:12px 16px;font-size:12px;line-height:1.9;color:var(--muted);margin:15px 0}.paused *,.paused *::before,.paused *::after{animation-play-state:paused!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.nojs{padding:25px;background:var(--paper);position:fixed;inset:56px 0 0;z-index:100}.yn-flow{animation:ynFlow 6s linear infinite}@keyframes ynFlow{to{stroke-dashoffset:-40}}
+@media(min-width:1600px){section.stage{padding-left:max(56px,calc((100vw - 1450px)/2));padding-right:max(56px,calc((100vw - 1450px)/2))}}
+@media(max-width:1150px){header{gap:8px;padding:0 18px}header .brand{font-size:13px}header nav button{font-size:11px;padding:6px}.letter{grid-template-columns:170px minmax(180px,.85fr) minmax(290px,1.2fr);gap:19px}section.stage{padding:27px 30px}.net{grid-template-columns:minmax(0,1fr) 300px;gap:18px}}
+@media(max-width:900px){header{height:92px;flex-wrap:wrap;align-content:center;gap:8px 12px;padding:9px 18px}header .brand{font-size:15px;flex:1}header nav{order:4;flex-basis:100%;width:100%}header nav button{font-size:12px;flex:1;padding:5px 8px}main{top:92px}.run,.net,.summary-grid{grid-template-columns:1fr}.net .side{position:static;max-height:none;border-left:0;padding:20px 0 0;border-top:1px solid var(--rule)}.net svg{min-height:220px}.letter{grid-template-columns:170px 1fr;gap:22px}.letter .pick{grid-row:1/3;max-height:none}.letter .facts{grid-column:2;grid-row:2}.letter .letter-main{grid-column:2;grid-row:1}.segs{grid-template-columns:repeat(2,1fr)}.seg{padding:20px 18px!important;border-right:0!important}.seg:nth-child(odd){border-right:1px solid var(--rule)!important;padding-left:0!important}.stagehead{gap:15px}.feed{height:340px}.log li{padding:9px 0}.nojs{top:92px}}
+@media(max-width:600px){header{padding-left:12px;padding-right:12px}header .brand{font-size:13px}.route-select{font-size:11px;max-width:106px}header .ctl{gap:4px}header .ctl button{min-width:27px;padding:0 6px;font-size:12px}header nav{gap:1px}header nav button{font-size:10px;padding:5px 4px}header nav button .n{display:none}section.stage{padding:24px 18px 30px}.open h1{font-size:36px;margin-bottom:22px}.open .lead{font-size:14px}.route-cards{gap:10px}.route-card{padding:15px 14px}.route-card h3{font-size:22px}.route-card p{font-size:11px}.route-card .arr{right:12px;top:17px;font-size:18px}.open .intro-meta{gap:13px;font-size:10px}.open .intro-meta b{font-size:14px}.hint{font-size:11px}h2{font-size:26px}.sub{font-size:13px}.kicker{font-size:11px}.stagehead{display:block}.stagehead .ghost{margin-top:12px}.counters{gap:25px}.counter b{font-size:32px}.counter span{font-size:11px}.run{gap:22px;margin-top:18px}.feed .hd,.feed .row{grid-template-columns:76px minmax(80px,1fr) minmax(100px,1.3fr);gap:7px;font-size:10px;padding-left:10px;padding-right:10px}.feed .hd span:last-child,.feed .row>span:last-child{display:none}.feed .src{font-size:9px}.graphwrap{padding:8px}.segs{grid-template-columns:1fr}.seg,.seg:nth-child(odd){padding:18px 0!important;border-right:0!important}.take{font-size:16px}.cards{grid-template-columns:1fr;gap:12px}.card h3{font-size:22px}.filterrow label:not(.search){flex:1}.filterrow select{width:100%}.grade-tabs{gap:5px}.grade-tabs button{font-size:11px;padding:6px 9px}.letter{display:flex;flex-direction:column;gap:20px}.pick{display:flex;gap:5px;max-height:none;overflow:auto!important;padding-bottom:8px}.pick button{min-width:145px;border-left:0;border-bottom:2px solid transparent;font-size:11px}.pick button.on{border-bottom-color:var(--accent);border-left:0}.letter .facts{order:3}.letter .letter-main{order:2}.paper{font-size:13px;padding:20px;min-height:320px}.paper.english{font-size:14px}.funnel{display:grid;grid-template-columns:1fr 1fr;border-bottom:0;gap:15px}.funnel div{border:0;border-bottom:1px solid var(--rule);padding:12px 0!important}.funnel b{font-size:33px}.summary-grid{gap:24px}.bottomline{padding:0 12px;font-size:9px}.bottomline .keys{display:none}.detail-dialog{width:96vw;max-height:94dvh}.dialoghead{padding:17px}.dialoghead h2{font-size:22px}.dialogbody{padding:18px}.dialoggrid{grid-template-columns:1fr;gap:20px}.record dl{grid-template-columns:65px 1fr;gap:7px}.close{font-size:19px}.intro-actions .next,.intro-actions .ghost{font-size:12px;padding:10px 13px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+@media print{header,.bottomline,.detail-dialog,.filterrow,.grade-tabs,button,.pick,.graphwrap{display:none!important}html,body{height:auto}main{position:static}section.stage,section.stage.on,#s0,#s0.on{position:static;display:block!important;overflow:visible;padding:30px 0;break-after:page}.log li{opacity:1;transform:none}.cards{grid-template-columns:1fr 1fr}.card{break-inside:avoid}.net,.run,.letter,.summary-grid{display:block}.net .side{max-height:none;overflow:visible}.feed{height:auto}.feed .src{position:static}.paper{white-space:pre-wrap;min-height:0}.letter .facts{display:block}.downloads{display:none}}
+
+.graphwrap{max-height:calc(100dvh - 300px);min-height:300px}#s0 .open{margin:auto}#s0.on{align-items:flex-start}@media(max-width:900px){.graphwrap{max-height:60dvh;min-height:260px}}
+/* Keep every keyboard-reachable replay row visible through its own scroll area. */
+.feed{display:flex;flex-direction:column;padding-bottom:0}.feed .hd{flex:none}#feedRows{flex:1;min-height:0;overflow:auto;scrollbar-gutter:stable}.feed .src{position:static;flex:none}.feed .row:focus-visible{outline-offset:-3px}
+</style></head><body><a class="skip" href="#stageTitle">跳到当前内容</a>
+<header><div class="brand">Yibing · AI 获客演示</div><nav id="nav" aria-label="演示步骤"></nav><label class="sr-only" for="route">产品路线</label><select class="route-select" id="route"><option value="all">两条线一起看</option><option value="纯碱">纯碱</option><option value="硫酸铵">硫酸铵</option></select><div class="ctl"><button id="motion" aria-pressed="false" title="暂停或恢复动效">暂停</button><button id="prev" aria-label="上一步">‹</button><button id="nextBtn" aria-label="下一步">›</button></div></header>
+<main id="main">
+<section class="stage on" id="s0" aria-label="选择产品线"><div class="open"><div class="kicker">Guangzhou Yi Bing Chemical · 两条产品线的客户研究</div><h1 id="stageTitle" tabindex="-1">先找对买家，<br>再决定把时间花在哪里。</h1><p class="lead">从公开采购记录找到买方，再反查供方与其他客户。<br>跟着 AI 的研究路径，看清谁值得先核实、为什么，以及下一步该问什么。</p><div class="intro-meta"><span><b>14</b> 家研究主名单</span><span><b>23</b> 条主名单记录</span><span><b>6</b> 个国家</span><span>另有 <b>1</b> 家待补联系 / 1 条记录</span></div><div class="route-cards"><button class="route-card" data-start="纯碱"><span class="index">01 / SODA ASH</span><span class="arr">↗</span><h3>纯碱</h3><p>轻质与重质分开看<br>10 家 · 工业渠道、清洁用品工厂、食品级待核</p></button><button class="route-card" data-start="硫酸铵"><span class="index">02 / AMMONIUM SULFATE</span><span class="arr">↗</span><h3>硫酸铵</h3><p>来源、形态与散装能力逐项核<br>4 家主名单 + 1 家待补联系</p></button></div><div class="intro-actions"><button class="next" data-start="all">完整看一遍 →</button><button class="ghost" data-go="4">直接看优先客户</button><a class="ghost" href="Yibing-纯碱与硫酸铵-详细台账.html">打开完整资料台账 ↗</a></div><p class="hint">资料核查于 <b>2026-10-22</b>，以下动效回放已整理的研究。<br>新增研究对象 11 家、已有研究补证 3 家；是否为公司新客仍需核客户库。当前采购需求均未确认，全部未联系。</p></div></section>
+<section class="stage" id="s1" aria-label="研究回放" hidden><div class="stagehead"><div><div class="kicker">01 / 研究回放 · 已整理资料，非实时抓取</div><h2 tabindex="-1">AI 怎样把线索整理成可跟进的名单</h2><div class="sub" id="runSub"></div></div><button class="ghost" id="replay">重新播放</button></div><div class="counters"><div class="counter"><b id="cRecords">0</b><span>条记录已展示</span></div><div class="counter"><b id="cBuyers">0</b><span>家企业已出现</span></div><div class="counter"><b id="cGrade">—</b><span>家列为优先核实</span></div></div><div class="run"><div><ol class="log" id="log"></ol><div class="run-status" id="runStatus" aria-live="polite"></div></div><div class="feed"><div class="hd"><span>记录日期</span><span>买方</span><span>货品</span><span>证据类型</span></div><div id="feedRows"></div><div class="src">日期可能为缴费日、到港日或平台样本日期；点击记录可看完整口径。</div></div></div><div class="stage-next"><span class="note">保留明确同品记录；供方、数量或用途等级缺失时，继续标缺。</span><button class="next" data-go="2">把关系连起来 →</button></div></section>
+<section class="stage" id="s2" aria-label="供应关系" hidden><div class="stagehead"><div><div class="kicker">02 / 关系网络 · 点企业，看连接它的证据</div><h2 tabindex="-1">谁向谁供货，哪些关系还缺一段</h2><div class="sub">按货票中的“供方 → 买方”连线。共用供方可继续扩展；供方未披露的买家，单独列为待补。</div></div><button class="ghost" data-go="3">看客户分类 →</button></div><div class="grade-tabs" id="networkModes" aria-label="关系展示范围"><button data-net="example" class="on">先看两跳示例</button><button data-net="all">全部已核关系</button></div><p class="tipline" id="networkHint"></p><div class="graph-legend"><span><i class="linekey"></i>公开正文可读</span><span><i class="linekey dashed"></i>仅索引待核</span><span>节点大小不代表采购量或价值</span></div><div class="net"><div class="graphwrap"><svg id="graph" role="img" aria-label="已核资料中的供应商与买方关系图"></svg></div><aside class="side" id="networkSide" aria-label="所选企业和证据"></aside></div><div class="warning">Quimpac → XING HUA → Solvesa 是已找到的两跳线索，原票仍待复核；Solvesa 的轻／重质尚缺。硫酸铵本轮核到了单段供货关系，尚未验证完整的两跳新买家链。</div></section>
+<section class="stage" id="s3" aria-label="客户分类" hidden><div class="kicker">03 / 客户分类 · 不同买方，先问不同的问题</div><h2 tabindex="-1">同样买化工原料，合作切入点并不一样</h2><div class="sub">结合具体采购货品与官网业务分类。企业身份能帮助判断谈法，当前需求仍要向买方确认。</div><div class="segs" id="segs"></div><div class="take">纯碱先核 <em>规格、用途与袋装交付</em>；硫酸铵先核 <em>来源、结晶／颗粒与散装承接能力</em>。<div class="note">不能用工业级资料替代食品级证明，也不能把官网50kg终端包装当作进口运输包装。</div></div><button class="next" data-go="4">哪些值得先跟进 →</button></section>
+<section class="stage" id="s4" aria-label="优先客户" hidden><div class="stagehead"><div><div class="kicker">04 / 优先客户 · 事实、判断和缺口一起看</div><h2 tabindex="-1" id="cardsTitle">先核实这 4 家</h2><div class="sub">排序综合同品证据、规格方向、联系入口和交付门槛。A 表示优先核实；采购量、毛利和准入未确认前，不估算成交价值。</div></div><button class="ghost" id="exportCards">导出筛选名单</button></div><div class="grade-tabs" id="gradeTabs" role="group" aria-label="优先级筛选"></div><div class="filterrow"><label class="search">查找企业、供方、提单或关键词<input id="search" type="search" placeholder="例如：Arvin / XING HUA / 25kg"></label><label>国家<select id="country"><option value="">全部国家</option></select></label><button class="ghost" id="resetFilters">重置筛选</button></div><div class="tipline" id="result" aria-live="polite"></div><div class="cards" id="cards"></div><div class="stage-next"><span class="note">完整货票、联系方式与来源放在企业详情里，点卡片即可展开。</span><button class="next" data-go="5">准备下一步怎么谈 →</button></div></section>
+<section class="stage" id="s5" aria-label="跟进准备" hidden><div class="kicker">05 / 跟进准备 · 先核实，再谈条件</div><h2 tabindex="-1">每家公司，一份具体的沟通准备</h2><div class="sub">左侧选企业，先看依据与公开入口，再看该问什么。英文联系草稿保留待填信息，未发送。</div><div class="letter"><div class="pick" id="pick" aria-label="选择企业"></div><div class="facts" id="facts"></div><div class="letter-main"><div class="paper-tabs" role="group" aria-label="准备材料类型"><button data-paper="brief" class="on" aria-pressed="true">核实提纲</button><button data-paper="letter" aria-pressed="false">英文联系草稿</button></div><div class="paper" id="paper" aria-label="跟进材料"></div><div class="paper-actions"><button class="ghost" id="copyPaper">复制文本</button><button class="ghost" id="finishTyping">显示完整内容</button><span id="copyStatus" aria-live="polite"></span></div><div class="note">公开邮箱／总机不等于已核采购人；公司实际产品、文件和交付能力由业务确认。这里生成准备材料，不执行发送。</div></div></div></section>
+<section class="stage" id="s6" aria-label="下一步与资料" hidden><div class="kicker">06 / 把研究接到业务动作上</div><h2 tabindex="-1">名单有了，下一步把缺口一项项补齐</h2><div class="sub" id="summarySub"></div><div class="funnel" id="funnel"></div><div class="summary-grid"><div><h3>第一批核实队列</h3><div class="queue" id="queue"></div><p>先提供两条产品线的真实厂家、最新COA/TDS/SDS、包装与MOQ、供量、港口、交期和付款边界。纯碱按轻／重质分开，硫酸铵按来源与形态分开。</p><p>散装客户先确认我方能否承接，再投入采购准入与报价。记录多或吨数大，不代表更容易成交。</p></div><div><h3>AI 已整理的 → 业务需要确认的</h3><ul><li><b>历史采购货品与来源</b> → 现在是否采购、何时补货、实际用量。</li><li><b>公开公司联系入口</b> → 谁负责原料采购、质量审批和供应商准入。</li><li><b>规格方向与适配缺口</b> → 当前批次文件、验收要求、交付与可留毛利。</li><li><b>条件优先级与准备材料</b> → 是否推进、怎么报价、何时联系及如何跟进。</li></ul></div></div><div class="downloads"><a class="next" href="Yibing-纯碱与硫酸铵-详细台账.html">看完整资料台账 ↗</a><a class="ghost" href="海关扩展/Yibing-纯碱硫酸铵-客户研究.csv" download>下载全部名单 CSV</a><a class="ghost" href="海关扩展/customs_leads.json" download>下载证据数据 JSON</a><a class="ghost" href="Yibing-Chemical-获客方案.html">返回公司获客方案</a></div><div class="close">把“找到了公司”，推进到 <em style="font-style:normal;color:var(--accent)">知道找谁、为什么找、还有什么没确认。</em></div></section>
+</main>
+<footer class="bottomline"><div class="progress" id="progress"></div><span><b>已整理资料回放</b> · 2026-10-22 · 全部未联系</span><span class="keys">← → 切换步骤 · 暂停按钮控制动效</span><span id="stepCount">01 / 07</span></footer>
+<dialog class="detail-dialog" id="detail" aria-labelledby="detailTitle"><div class="dialoghead"><div><span class="small-label" id="detailKicker"></span><h2 id="detailTitle"></h2><div class="dialogmeta" id="detailMeta"></div></div><button class="ghost" id="closeDetail" aria-label="关闭企业详情">✕</button></div><div class="dialogbody" id="detailBody"></div></dialog>
+<noscript><div class="nojs">演示动效需要 JavaScript。<a href="Yibing-纯碱与硫酸铵-详细台账.html">打开无需脚本也可阅读的完整资料台账。</a></div></noscript>
+<script id="research-data" type="application/json">{"checked_date": "2026-10-22", "company": "Guangzhou Yi Bing Chemical Co., Ltd.", "main_count": 14, "pending_count": 1, "new_research_count": 11, "updated_research_count": 3, "trade_record_count": 23, "product_counts": {"纯碱": 10, "硫酸铵": 4}, "priority_counts": {"A": 4, "B": 5, "C": 5}, "rows": [{"name": "Arvin International Marketing Inc.", "country": "菲律宾", "role": "化工、盐类进口分销商", "line": "纯碱", "products": ["SODA ASH LIGHT（2026政府实录，纯度和数量未列）", "SODA ASH DENSE 99.2% MIN（2024政府实录）"], "trade_records": [{"date": "2026-03-19", "date_type": "DATE OF PAYMENT，缴费日；不是到港日", "supplier": null, "buyer": "ARVIN INTERNATIONAL MARKETING INC.", "product": "SODA ASH LIGHT", "bol": "ZJRQ260200008", "quantity": "未公开", "entry_number": "2026P04C C00000588", "source_url": "https://customs.gov.ph/wp-content/uploads/2026/03/NOTICE-TO-CLAIM_March-19-2026.pdf", "access": "本轮海关官方PDF正文直接可读，第1页第5行", "limitations": "供方、原产地、纯度、数量、包装及到港日期未列；不从B/L推断。缴费已发生，不是新询价。", "evidence_type": "官方海关公告"}, {"date": "2026-03-19", "date_type": "DATE OF PAYMENT，缴费日；不是到港日", "supplier": null, "buyer": "ARVIN INTERNATIONAL MARKETING INC.", "product": "SODA ASH LIGHT", "bol": "ZJZC26003003", "quantity": "未公开", "entry_number": "2026P04C C00000594", "source_url": "https://customs.gov.ph/wp-content/uploads/2026/03/NOTICE-TO-CLAIM_March-19-2026.pdf", "access": "本轮海关官方PDF正文直接可读，第1页第11行", "limitations": "独立B/L；不据此合计设备/化学品吨数或推断全年采购量；供应商缺失。", "evidence_type": "官方海关公告"}, {"date": "2024-08-02", "date_type": "DATE PAID，缴费日；不是到港日", "supplier": null, "buyer": "ARVIN INTERNATIONAL MARKETING INC.", "product": "SODA ASH DENSE 99.2PCT MIN", "bol": "SITGTXBT493981", "quantity": "1×20GP，27 BAG × 1000 KG/BAG（公告包装货描）", "source_url": "https://customs.gov.ph/wp-content/uploads/2024/08/POB_NOTICETOCLAIM_AUG2.pdf", "access": "本轮及前轮公开海关PDF可读，第1页第2行", "limitations": "历史dense记录；不能把27吨套给2026 light两票；供方未公开。", "evidence_type": "官方海关公告"}], "official_urls": ["https://www.arvinintl.com/", "https://www.arvinintl.com/products", "https://www.arvinintl.com/contact?subject=careers"], "business": "本轮官网索引明确菲律宾分销、全球采购和soda ash业务；直接官网打开有超时/动态空正文，业务和联系按官网索引证据标注。盐产品食品资质不自动覆盖纯碱。", "contacts": [{"type": "email", "value": "import@arvinintl.com", "source_url": "https://www.arvinintl.com/products", "note": "本轮官网产品页搜索索引可见；进口业务入口，不等于已核采购决策人。"}, {"type": "email", "value": "info@arvinintl.com", "source_url": "https://www.arvinintl.com/products", "note": "官网索引通用邮箱，未测试有效性。"}, {"type": "phone", "value": "8815-0469 to 70；8843-3676 to 80", "source_url": "https://www.arvinintl.com/contact?subject=careers", "note": "官网索引列座机范围，原文保留；官网提示手机线路暂不可用。联系页含careers查询参数，不将其表单当化工采购专用入口。"}, {"type": "contact_url", "value": "https://www.arvinintl.com/products", "source_url": "https://www.arvinintl.com/products", "note": "企业官网产品/业务入口；未提交表单。"}], "discovery_path": "旧dense候选→本轮沿海关同品类公告补2026 light两票→核官网主体、产品及进口联系。供方未公开，不能称已反查出其现供应商。", "priority": "A", "reason": "2026同品类官方记录和进口入口清楚，适合低成本询问规格及新增来源政策。dense99.2与我方名义含量接近，light实录未给纯度，仍需逐项对照。", "fit_gaps": ["light买方规格与我方干基99.2%是否同口径", "dense堆密度/粒度及杂质上限，批次COA", "我方包装、MOQ、交期和到岸成本", "是否接受出口贸易商及新增生产来源"], "missing_info": ["两票2026供方、数量/包装和到港日", "采购/产品与供应商审批负责人", "实际补货时间、数量、目标价和付款", "现有品牌/厂家及合同限制", "索引邮箱电话的当前有效性"], "next_action": "先准备我方light/dense分开的规格与生产来源表；由业务确认import入口职责及新供方政策，再补2026票据供应商与当前补货需求。", "existing_candidate": true, "checked_date": "2026-10-22", "status": "未联系；当前采购需求和产品匹配未确认", "source_urls": ["https://customs.gov.ph/wp-content/uploads/2026/03/NOTICE-TO-CLAIM_March-19-2026.pdf", "https://customs.gov.ph/wp-content/uploads/2024/08/POB_NOTICETOCLAIM_AUG2.pdf", "https://www.arvinintl.com/", "https://www.arvinintl.com/products", "https://www.arvinintl.com/contact?subject=careers"], "source_priority": "P1｜先核实工业light/dense合作（条件性）", "id": "YC-01", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "已有研究补证", "evidence_types": ["官方海关公告"], "latest_date": "2026-03-19", "supplier_status": "同笔供方待补", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Fábrica de Jabones La Princesa S.A. de C.V.", "country": "墨西哥", "role": "终端制造商 · 肥皂与清洁用品", "line": "纯碱", "products": ["轻质纯碱，≥99.2%"], "trade_records": [{"date": "2026-06-15", "date_type": "平台 Arrival Date（到港日）", "supplier": "GLOBE CHEMICALS GMBH", "buyer": "FABRICA DE JABONES LA PRINCESA SA D（平台截短名）", "product": "轻质纯碱，最低99.2%；25kg袋装", "bol": "MEDUWZ193253", "quantity": "净重28 MT；毛重28,532 kg；1,120袋×25kg；28托盘", "source_url": "https://www.importgenius.com/suppliers/globe-chemicals-gmbh", "access": "公开正文", "limitations": "供应商主页公开货票行可读；进口方名截短，以官网名称补全、法定税号仍待核。页面Destination栏写South Korea，与墨西哥买方国家不同，不能用该栏推断目的国或原产地。该票完整运输路径待复核。", "evidence_type": "公开货票样本"}], "official_urls": ["https://www.jabonesprincesa.com.mx/contacto/"], "business": "官网展示洗衣、个人与家居清洁产品；可作为使用轻碱的终端企业研究，其实际配方和采购部门仍需确认。", "contacts": [{"type": "官网销售／渠道邮箱", "value": "chedid.sleiman@grupocmg.com.mx", "source_url": "https://www.jabonesprincesa.com.mx/contacto/", "note": "官网发布的商务入口，未证实原料采购职务。"}, {"type": "官网电话／WhatsApp", "value": "+52 9991 43 95 18", "source_url": "https://www.jabonesprincesa.com.mx/contacto/", "note": "公司公开联系号码，先请转原料采购；未验证接通。"}], "discovery_path": "轻质纯碱 → GLOBE CHEMICALS供方公开货票 → La Princesa买方 → 官网清洁用品与联系方式", "priority": "A", "reason": "2026年同品、≥99.2%和25kg袋装记录明确，与Yibing轻碱产品方向接近；终端工厂有直接原料应用场景，可先验证补充供方机会。", "fit_gaps": ["官网干基≥99.2%不等于买方所有杂质、色度或配方要求已满足", "25kg袋装、海运到墨西哥的到岸成本与交期能力待公司确认"], "missing_info": ["当前补货窗口、实际年用量与订单频率", "原料采购负责人及供应商准入办法", "交易主体税号及完整运输路径", "现供价格、付款条款、当批COA与具体验收指标"], "next_action": "先向公司核25kg轻碱可供成本与COA；联系准备以“补充轻质纯碱来源”为切入，请公开入口转原料采购，核下一采购窗口。", "existing_candidate": false, "checked_date": "2026-10-22", "source_urls": ["https://www.importgenius.com/suppliers/globe-chemicals-gmbh", "https://www.jabonesprincesa.com.mx/contacto/"], "demand_confirmation": "未确认", "outreach_status": "未联系", "source_priority": "A", "id": "YC-02", "list_status": "研究主名单", "product_match": "待确认", "batch_note": "本轮新增研究对象", "evidence_types": ["公开货票样本"], "latest_date": "2026-06-15", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Atlas Fertilizer Corporation", "country": "菲律宾", "role": "肥料制造商兼硫酸铵进口买方", "line": "硫酸铵", "existing_candidate": true, "products": ["AMMONIUM SULPHATE (CAPROLACTAM GRADE) IN BULK"], "trade_records": [{"date": "2025-04-11", "date_type": "52wmb公开索引所标Trade date；非本轮直接查阅原始提单", "supplier": "Ampro Hangzhou Trading Co., Ltd.", "buyer": "Atlas Fertilizer Corp.", "product": "AMMONIUM SULPHATE (CAPROLACTAM GRADE) IN BULK", "bol": "hanh042025", "quantity": "3,300,000 kg（页面Weight）", "source_url": "https://en.52wmb.com/supplier/203338243", "access": "本轮搜索索引完整显示双方、货品、日期、B/L与重量；原页直开此前超时", "limitations": "平台整理记录，未见原始提单；索引金额币种/口径不明，不采用金额；该供方公开仅见Atlas，未据此虚构其他买方。", "evidence_type": "索引待核"}, {"date": "2024-11-05", "date_type": "TradeImeX Sample Shipment的DATE/报关样本日期，不自行等同到港日", "supplier": "HANGZHOU PRESTON TRADING CO., LTD", "buyer": "ATLAS FERTILIZER CORPORATION", "product": "AMMONIUM SULPHATE (CAPROLACTAM GRADE) IN BULK", "bol": "PTJFX001", "quantity": "6,600,000 Kilogram（QUANTITY；NETMASSKGS同为6,600,000）", "source_url": "https://www.tradeimex.in/company/customs-data/Philippines-31022100000-importer/atlas-fertilizer-corporation", "access": "本轮直接读到公开Sample Shipment，双方/DATE/BL/货品/数量同表；HS31022100000，中国→菲律宾", "limitations": "第三方平台公开样本，非原始提单文件；没有当下询盘或采购计划。", "evidence_type": "公开货票样本"}, {"date": "2022-09-06", "date_type": "Trademo Shipment Date", "supplier": "fujian yaoda fertilizer technology", "buyer": "atlas fertilizer corporation", "product": "ammonium sulphate (caprolactam grade) in bulk", "bol": null, "quantity": "7,570,000 kg（Shipment Weight）", "source_url": "https://www.trademo.com/companies/fujian-yaoda-fertilizer-techno/32693313", "access": "本轮公开搜索结果显示同表双方、日期、货品与重量；到港sangi cebu", "limitations": "旧平台货运记录，B/L未公开；页面重复展示同一条，不累计为多笔。", "evidence_type": "索引待核"}], "official_urls": ["https://atlasfertilizer.com/about/", "https://atlasfertilizer.com/contact/"], "business": "官网介绍菲律宾肥料生产业务；官方联系页本轮显示Makati总部。贸易样本证明其曾进口己内酰胺级散装硫酸铵，不推定自用比例。", "contacts": [{"type": "email", "value": "corpmail@atlasfertilizer.com", "source_url": "https://atlasfertilizer.com/contact/", "note": "本轮直接读取官方Contact页；公司公共邮箱，尚非采购人邮箱。"}, {"type": "phone", "value": "+63 (2) 8812-7881 to 84", "source_url": "https://atlasfertilizer.com/contact/", "note": "官方公司电话，可用于请求转接采购；未验证接通。"}, {"type": "contact_page", "value": "https://atlasfertilizer.com/contact/", "source_url": "https://atlasfertilizer.com/contact/", "note": "官网当前联系页；本轮显示地址10th Floor Tower 2, RCBC Plaza, Makati，搜索旧地址不作为当前地址。"}], "discovery_path": "既有Atlas候选→反查Ampro/Fujian Yaoda供方公开记录→补到Hangzhou Preston同品级完整样本；反查未取得这些供方其他海外买方的可验证同品记录。", "priority": "A", "reason": "同笔双方、品级、散装路径、提单号与数量较清楚；caprolactam路线与Yibing已披露方向接近，可先核是否接受新供方。", "fit_gaps": ["Yibing干基N≥21%、水分≤0.2%、游离酸≤0.03%需与买方实际COA逐项对照；贸易货描未列全部指标。", "历史单批规模3,300–7,570吨级，Yibing现有供货量、散装装运与信用条件未核实。", "焦化级N≥20.5%不能直接替代此记录的caprolactam级；granular能力未验证。"], "missing_info": ["当前采购需求和下次采购时间", "实际采购主体/采购负责人", "现用规格、粒度、防结块、杂质及质量验收方法", "新供方准入/注册与试单条件", "当前价盘、可接受利润、账期、信用及散装港口能力"], "next_action": "先由Yibing确认caprolactam货源、连续供货和散装能力；准备COA/SDS后，通过官网公司入口核采购部门与准入程序，再询问当期需求。", "checked_date": "2026-10-22", "source_urls": ["https://www.tradeimex.in/company/customs-data/Philippines-31022100000-importer/atlas-fertilizer-corporation", "https://en.52wmb.com/supplier/203338243", "https://www.trademo.com/companies/fujian-yaoda-fertilizer-techno/32693313", "https://atlasfertilizer.com/about/", "https://atlasfertilizer.com/contact/"], "status": "当前采购需求、预算、采购窗口、实际采购人、开放新供方意愿均未确认；未联系；是否在Yibing内部CRM未知。", "source_priority": "A｜优先核实（仅研究顺序，不代表合格或正在采购）", "id": "YC-03", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "已有研究补证", "evidence_types": ["索引待核", "公开货票样本"], "latest_date": "2025-04-11", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Universal Harvester, Inc.", "country": "菲律宾", "role": "肥料制造、进口及分销企业；曾为硫酸铵收货人", "line": "硫酸铵", "existing_candidate": false, "products": ["AMMONIUM SULPHATE CAPRO GRADE IN BULK"], "trade_records": [{"date": "2024-11-14", "date_type": "TradeImeX Sample Shipment的DATE/报关样本日期；不自行解释为到港日", "supplier": "SHANGHAI BESTWIN PETROCHEMICALS CO LTD", "buyer": "UNIVERSAL HARVESTER INC.", "product": "AMMONIUM SULPHATE CAPRO GRADE IN BULK", "bol": "TKHU2414A", "quantity": "5,800,000 Kilogram（QUANTITY/NETMASSKGS）", "source_url": "https://www.tradeimex.in/company/customs-data/Philippines-31022100000-importer/universal-harvester-inc.", "access": "本轮直接读到公开样本，双方/DATE/BL/货品/数量同表；HS31022100000，中国→菲律宾", "limitations": "第三方平台报关样本，非原始提单；该历史CIF记录不等于当前需求或Yibing可承接量。", "evidence_type": "公开货票样本"}, {"date": "2021-06-11", "date_type": "菲律宾海关到货公告表ARRIVAL；同表DISCHARGED为2021-06-11，IFM_REGDATE为2021-06-10", "supplier": null, "buyer": "UNIVERSAL HARVESTER INC", "product": "AMMONIUM SULPHATE (CAPRO GRADE) PACKING: IN BULK ORIGIN: CHINA", "bol": "EASRU2106A", "quantity": null, "source_url": "https://customs.gov.ph/wp-content/uploads/2023/04/06-11-2021-NOA-DAVAO.pdf", "access": "本轮直接读官方PDF，第24页（0起23）收货人/日期/BL/货品；船EASTERN RUBY", "limitations": "公告没有供方和数量，不能把船名当供方；同页另见EASRU2106B，不与A合并推断吨数。", "evidence_type": "官方海关公告"}], "official_urls": ["https://www.universalharvester.com/about-us.html", "https://www.universalharvester.com/contact-us.html"], "business": "官网称菲律宾肥料制造、进口和分销企业；MOP进口分销、SOP/HCl/NaOCl制造。硫酸铵采购身份由具体贸易样本与官方海关公告支撑，官网未说明每笔硫酸铵最终用途。", "contacts": [{"type": "email", "value": "info@universalharvester.com", "source_url": "https://www.universalharvester.com/contact-us.html", "note": "官方写明business concerns及转交相应部门；公共入口，非已确认采购人。"}, {"type": "phone", "value": "(+63 2) 8 995 8888", "source_url": "https://www.universalharvester.com/contact-us.html", "note": "官方总机，连接全部部门；未验证接通。"}, {"type": "phone", "value": "(+63 2) 8 421 2234", "source_url": "https://www.universalharvester.com/contact-us.html", "note": "官方销售部门电话，适合询转采购，不当作采购专线。"}, {"type": "contact_page", "value": "https://www.universalharvester.com/contact-us.html", "source_url": "https://www.universalharvester.com/contact-us.html", "note": "Quezon City总部；未提交表单。"}], "discovery_path": "硫酸铵进口买方目录→Universal Harvester→TradeImeX同笔供方Shanghai Bestwin→菲律宾海关旧公告交叉核货品与收货人。尚未验证Shanghai Bestwin的另一买方，不称已跑通两跳。", "priority": "A", "reason": "与Atlas同属capro散装路线，完整样本与政府到货公告互补；官网公司联系入口清楚，核采购部门成本较低。", "fit_gaps": ["Yibing干基N≥21%、水分≤0.2%、游离酸≤0.03%是否满足买方指标尚未比对。", "5,800吨历史散装单，Yibing产能、装港、航运、CIF能力与资金条件均未知。", "买方硫酸铵为生产原料或转售、实际采购主体未核；不可从自身制造业务推定自用。"], "missing_info": ["当前需求与新供方开放情况", "采购负责人和授权进口主体", "验收COA/粒度/水分/酸度/杂质要求", "散装或袋装试单、港口及合同条款", "现用供应商关系、价格窗口与利润空间"], "next_action": "先确认Yibing散装capro产品与资金物流能力；用官方info/总机核原料采购或肥料采购团队，询准入、试单及现行指标。", "checked_date": "2026-10-22", "source_urls": ["https://www.tradeimex.in/company/customs-data/Philippines-31022100000-importer/universal-harvester-inc.", "https://customs.gov.ph/wp-content/uploads/2023/04/06-11-2021-NOA-DAVAO.pdf", "https://www.universalharvester.com/about-us.html", "https://www.universalharvester.com/contact-us.html"], "status": "当前采购需求、预算、采购窗口、实际采购人、开放新供方意愿均未确认；未联系；是否在Yibing内部CRM未知。", "source_priority": "A｜优先核实（仅研究顺序，不代表合格或正在采购）", "id": "YC-04", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["公开货票样本", "官方海关公告"], "latest_date": "2024-11-14", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Manuchar Philippines Inc.", "country": "菲律宾", "role": "工业化学品分销商；全球集团菲律宾本地主体", "line": "纯碱", "products": ["SODIUM CARBONATE – SODA ASH LIGHT 99.2% MIN（2026政府实录）", "Soda Ash Dense / Light（菲律宾官方目录）"], "trade_records": [{"date": "2026-03-27", "date_type": "DATE OF PAYMENT，缴费日，不是到港日", "supplier": null, "buyer": "MANUCHAR PHILIPPINES INC.", "product": "SODIUM CARBONATE – SODA ASH LIGHT 99.2% MIN", "bol": "AGCFDPH001", "quantity": "未公开", "entry_number": "2026P04C C00000632", "source_url": "https://customs.gov.ph/wp-content/uploads/2026/04/NOTICE-TO-CLAIM_March-27-2026.pdf", "access": "本轮海关官方PDF正文直接可读，第2页第39行", "limitations": "供方、原产、数量、包装和到港日期未列。不能从集团其他国家记录补为这票供方。", "evidence_type": "官方海关公告"}], "official_urls": ["https://www.manuchar.com/ph/en/chemical-distribution/our-products", "https://www.manuchar.com/ph/en/manuchar-at-your-service"], "business": "菲律宾官方站目录列light/dense，联系页列Taguig本地办公室；本轮产品及联系为官方站搜索索引可见正文。只计菲律宾主体一家公司，不按各国办公室加买家。", "contacts": [{"type": "email", "value": "contact.ph@manuchar.com", "source_url": "https://www.manuchar.com/ph/en/manuchar-at-your-service", "note": "本轮官方联系页索引可见，菲律宾通用业务入口，采购职责待核。"}, {"type": "phone", "value": "+63 2 76214061", "source_url": "https://www.manuchar.com/ph/en/manuchar-at-your-service", "note": "官方本地办公室电话索引可见；未测试有效性。"}, {"type": "contact_url", "value": "https://www.manuchar.com/ph/en/manuchar-at-your-service", "source_url": "https://www.manuchar.com/ph/en/manuchar-at-your-service", "note": "菲律宾官方业务联系页，未提交表单。"}], "discovery_path": "沿菲律宾纯碱海关公告取得具名收货B/L→核集团菲律宾站的产品和本地联系。尚缺供方，不冒称已反查完整供应链。", "priority": "B", "reason": "较新政府同品类记录、本地入口和工业产品路线明确；但集团可能有集中采购和厂商准入，不能凭规模推订单或认定易进入。", "fit_gaps": ["99.2%是否干基及杂质/粒度规范", "集团是否接受贸易商及新生产来源", "Yibing包装/MOQ、可供量、COA与追溯", "到岸物流费用与付款"], "missing_info": ["该票实际供方、数量/包装与到港日", "菲律宾/区域总部各自采购权限", "当前采购窗口与新来源政策", "实际牌号及质量验收要求", "本地联系人职责及邮件有效性"], "next_action": "先核菲律宾纯碱产品经理/采购路径和集团准入，再按我方工业light文件与供货条件做对应；没有真实需求前不投入大批样品。", "existing_candidate": false, "checked_date": "2026-10-22", "status": "未联系；当前采购需求、准入与产品匹配未确认", "source_urls": ["https://customs.gov.ph/wp-content/uploads/2026/04/NOTICE-TO-CLAIM_March-27-2026.pdf", "https://www.manuchar.com/ph/en/chemical-distribution/our-products", "https://www.manuchar.com/ph/en/manuchar-at-your-service"], "source_priority": "P2｜工业light名义指标接近，先核集团/本地采购路径", "id": "YC-05", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["官方海关公告"], "latest_date": "2026-03-27", "supplier_status": "同笔供方待补", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Quimpac Ecuador S.A. QUIMPACSA", "country": "厄瓜多尔", "role": "化工进口／分销候选", "line": "纯碱", "products": ["重质纯碱"], "trade_records": [{"date": "2026-06-22", "date_type": "平台到港日（搜索索引）", "supplier": "XING HUA INTERNATIONAL CO., LIMITED", "buyer": "QUIMPAC ECUADOR S.A QUIMPACSA", "product": "重质纯碱／CARBONATO DE SODIO；HS记录2836200000", "bol": "GSSWLDN36425A", "quantity": "150,000 KILOGRAMO BRUTO（毛重kg）；150件，件型未公开", "source_url": "https://www.importgenius.cn/ecuador/suppliers/xing-hua-intl-co-ltd", "access": "搜索索引", "limitations": "中文站索引同时可见双方、品名、提单和日期；原页本轮超时，英文页近期5票未显示此行。属索引待复核；毛重不能视为净采购量。", "evidence_type": "索引待核"}], "official_urls": ["https://quimpac.com.ec/c-o-n-t-a-c-t-o/"], "business": "公开进口主体与厄瓜多尔Quimpac官网相符；重碱用于转售还是自用需问采购。官网有专列Compras采购入口。", "contacts": [{"type": "官网采购电话", "value": "+593 99 070 5523", "source_url": "https://quimpac.com.ec/c-o-n-t-a-c-t-o/", "note": "官网明确标注Compras；个人职务、当前负责品类及接通状态未核。"}, {"type": "官网销售邮箱", "value": "ventas@quimpac.com.ec", "source_url": "https://quimpac.com.ec/c-o-n-t-a-c-t-o/", "note": "可请求转采购。官网另列采购邮箱compras-importanciones@quimac.com.ec，域名与官网不同且拼写可疑，本轮不把它做可点击邮箱，也不擅自纠正。"}], "discovery_path": "重质纯碱 → XING HUA供方公开索引 → QUIMPACSA货票 → 官网采购入口", "priority": "B", "reason": "2026年重碱进口线索及官网采购电话同时存在，值得优先补原票；本轮只有贸易索引，先补证据再进入首轮商务核实。", "fit_gaps": ["重碱含量、堆密度、粒度和具体用途未公开", "包装、到岸成本与供应商准入要求未确认"], "missing_info": ["原票复核与净重、实际包装", "当前采购规格、频次、窗口和现供条件", "采购邮箱拼写和实际负责人的确认", "本品用途、付款与信用条件"], "next_action": "先复核GSSWLDN36425A；使用官网采购电话核负责部门及正确邮箱，随后对照重碱规格和到Guayaquil的交付条件。", "existing_candidate": false, "checked_date": "2026-10-22", "source_urls": ["https://www.importgenius.cn/ecuador/suppliers/xing-hua-intl-co-ltd", "https://quimpac.com.ec/c-o-n-t-a-c-t-o/"], "demand_confirmation": "未确认", "outreach_status": "未联系", "source_priority": "B", "id": "YC-06", "list_status": "研究主名单", "product_match": "待确认", "batch_note": "本轮新增研究对象", "evidence_types": ["索引待核"], "latest_date": "2026-06-22", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Solvesa Ecuador S.A.", "country": "厄瓜多尔", "role": "进口分销商／化工企业", "line": "纯碱", "products": ["碳酸钠（轻／重质未公开）"], "trade_records": [{"date": "2026-06-09", "date_type": "平台 Arrival Date（搜索索引）", "supplier": "XING HUA INTERNATIONAL CO LIMITED", "buyer": "SOLVESA ECUADOR S.A", "product": "CARBONATO DE SODIO（碳酸钠）", "bol": "LCRIN13969GYQ004", "quantity": "1,002,000 KILOGRAMO BRUTO（毛重kg）", "source_url": "https://www.importgenius.cn/ecuador/suppliers/xing-hua-intl-co-ltd", "access": "搜索索引", "limitations": "同一供方索引中的另一买方货票；原页超时，轻/重质及净重不可见。不把同页其他肥料或表面活性剂票据当作纯碱。", "evidence_type": "索引待核"}], "official_urls": ["https://solvesacorp.com/", "https://solvesacorp.com/contacto/"], "business": "官网自述从事化学品、原料及肥料的进口、制造与销售，属Aris集团；本次按同品进口分销机会研究。", "contacts": [{"type": "官网通用邮箱", "value": "info@solvesacorp.com", "source_url": "https://solvesacorp.com/contacto/", "note": "通用商务入口，非已确认采购人。"}, {"type": "官网总机", "value": "+593 4 3704040", "source_url": "https://solvesacorp.com/contacto/", "note": "按官网(593) 43704040格式整理，需转原料采购。"}], "discovery_path": "Quimpac样板买方 → 同供方XING HUA → 其他买方Solvesa → 核碳酸钠货票与官网主体（贸易行仍为索引）", "priority": "B", "reason": "与Quimpac共享可见供方，有2026年碳酸钠货票线索及现成分销渠道；但轻/重质未明确，不能因毛重较大就列为最高优先。", "fit_gaps": ["先区分light/dense，避免错配Yibing产品", "未知批量、包装与规格，不能据单票毛重推断年需求"], "missing_info": ["原票、轻/重质、含量及杂质标准", "净采购量及实际用途", "新供方准入、采购人、采购窗口", "贸易条款、交期、付款及价格区间"], "next_action": "复核该提单并补轻/重质；通过公司总机/通用邮箱找到该原料采购，确认规格后再作交付与利润测算。", "existing_candidate": false, "checked_date": "2026-10-22", "source_urls": ["https://www.importgenius.cn/ecuador/suppliers/xing-hua-intl-co-ltd", "https://solvesacorp.com/", "https://solvesacorp.com/contacto/"], "demand_confirmation": "未确认", "outreach_status": "未联系", "source_priority": "B", "id": "YC-07", "list_status": "研究主名单", "product_match": "待确认", "batch_note": "本轮新增研究对象", "evidence_types": ["索引待核"], "latest_date": "2026-06-09", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "PT Saprotan Utama Nusantara", "country": "印度尼西亚", "role": "肥料品牌/进口与农业投入品销售企业", "line": "硫酸铵", "existing_candidate": false, "products": ["Ammonium Sulphate", "官方ZA Pak Tani：N21%、S24%，结晶和颗粒，50kg"], "trade_records": [{"date": "2026-07-29", "date_type": "NBD公开搜索索引所标Import日期", "supplier": null, "buyer": "PT SAPROTAN UTAMA NUSANTARA", "product": "AMMONIUM SULPHATE（HS31022100）", "bol": null, "quantity": null, "source_url": "https://en.nbd.ltd/trader/info/I9NBD234909628", "access": "本轮索引显示日期、进口商、HS、货品、原产中国；供方仅G***.；直开遇WAF，不绕过", "limitations": "无法还原遮盖供方；同日另有AMMONIUM SULFATE NITRATE，已严格排除该项，未混为硫酸铵。", "evidence_type": "索引待核"}, {"date": "2026-04-30", "date_type": "Market Inside公开搜索索引所标进口记录日期", "supplier": null, "buyer": "PT SAPROTAN UTAMA NUSANTARA", "product": "Ammonium Sulphate（HS31022100）", "bol": null, "quantity": "541.88 Metric ton；Net Weight 541,880 kg（索引列值）", "source_url": "https://www.marketinsidedata.com/en/company/pt-saprotan-utama/88812a660df99d2d453e36f5ef4679ac/ID", "access": "本轮索引可读公司具名货运表；直接打开返回旧版May2024–Apr2025概要且明细锁定，日期/数量仅按索引证据保存", "limitations": "页面版本与索引不一致，2026日期/数量需原件或第二明细复核；供方锁定；货描不说明caprolactam/coking或形态。", "evidence_type": "索引待核"}], "official_urls": ["https://saprotan-utama.com/", "https://saprotan-utama.com/wp-content/uploads/2020/11/Brosur-ZA-13Agustus2020.pdf"], "business": "官网经营肥料/农药/种子等农业投入品；官方ZA宣传册将PT. SAPROTAN UTAMA NUSANTARA列为注册持有人/进口方，并列N21%、S24%、结晶及颗粒两种形态。不能把CV Saprotan Utama进口记录未经核主体就合并给PT。", "contacts": [{"type": "email", "value": "info@saprotan-utama.com", "source_url": "https://saprotan-utama.com/", "note": "本轮直接读取官网页脚；公司公共邮箱，未确认采购人。"}, {"type": "phone", "value": "+62 24 841 3208", "source_url": "https://saprotan-utama.com/", "note": "本轮官网页脚及官方ZA册一致的总机；未验证接通。"}, {"type": "phone", "value": "+62 24 841 3178", "source_url": "https://saprotan-utama.com/", "note": "官方页脚第二电话；部门未知，非采购专线。"}, {"type": "website", "value": "https://saprotan-utama.com/", "source_url": "https://saprotan-utama.com/", "note": "总部Semarang，Jl. Brigjend Sudiarto79；未提交咨询。"}], "discovery_path": "同品HS310221/硫酸铵进口买方检索→PT具名公开索引记录→官网ZA进口主体/规格/联系入口。此条为品类找买家路线，未取得其具名供方，不声称为已跑通两跳。", "priority": "B", "reason": "2026同品索引与官方ZA进口/品牌业务相互补充，官网公共入口清楚；但进口形态、品级、供方和原始明细仍缺，先核结晶路线。", "fit_gaps": ["官方同时经营结晶/颗粒，不能推断公开采购那笔为结晶；Yibing颗粒产品能力未核实。", "公开货描仅硫酸铵，caprolactam与coking未区分；焦化N≥20.5%不得直接匹配N21%品牌规格。", "Yibing干基N/水分/游离酸、杂质、50kg品牌包装、印尼注册与供货能力需逐项确认。"], "missing_info": ["原始提单或可复核的2026进口明细", "同笔供方/BOL/运输包装/品级形态", "当前需求、采购负责人及新供方政策", "ZA最新COA和结晶采购占比", "注册、品牌包装、起订量、可接受价格和利润"], "next_action": "先核采购所需究竟结晶还是颗粒，争取真实COA/验收条件；结晶匹配后再核Yibing供货与印尼准入，补原始明细再提高研究等级。", "checked_date": "2026-10-22", "source_urls": ["https://en.nbd.ltd/trader/info/I9NBD234909628", "https://www.marketinsidedata.com/en/company/pt-saprotan-utama/88812a660df99d2d453e36f5ef4679ac/ID", "https://saprotan-utama.com/", "https://saprotan-utama.com/wp-content/uploads/2020/11/Brosur-ZA-13Agustus2020.pdf"], "status": "当前采购需求、预算、采购窗口、实际采购人、开放新供方意愿均未确认；未联系；是否在Yibing内部CRM未知。", "source_priority": "B｜条件匹配后跟进（仅研究顺序）", "id": "YC-08", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["索引待核"], "latest_date": "2026-07-29", "supplier_status": "同笔供方待补", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "PT Meroke Tetap Jaya", "country": "印度尼西亚", "role": "肥料及农业投入品贸易/分销企业；MerokeZA品牌方", "line": "硫酸铵", "existing_candidate": true, "products": ["AMMONIUM SULPHATE FERTILIZER CAPROLACTAM GRADE MEREK: MEROKEZA", "官网MerokeZA：白色结晶粉末，N21%、S24%，50kg袋"], "trade_records": [{"date": "2025-04-24", "date_type": "Volza公司具名Recent Imports所标进口记录日期", "supplier": null, "buyer": "PT MEROKE TETAP JAYA", "product": "AMMONIUM SULPHATE FERTILIZER CAPROLACTAM GRADE MEREK: MEROKEZA", "bol": null, "quantity": "8,800.00 TNE（平台公开单位；未见原件复核）", "source_url": "https://www.volza.com/p/ammonium-sulphate-caprolactam-grade/hsn-code-31022100/buyers-directory/", "access": "本轮公开搜索结果公司具名区块可见日期/品名/数量；供应商/BOL为付费字段", "limitations": "平台摘要非原始提单；无法补出同笔供方，不把YARA/FERTCOM等全品类供方表套到本品。", "evidence_type": "索引待核"}, {"date": "2025-03-12", "date_type": "Volza公司具名Recent Imports所标进口记录日期", "supplier": null, "buyer": "PT MEROKE TETAP JAYA", "product": "AMMONIUM SULPHATE FERTILIZER CAPROLACTAM GRADE MEREK: MEROKEZA", "bol": null, "quantity": "7,800.00 TNE（平台公开单位；未见原件复核）", "source_url": "https://www.volza.com/p/ammonium-sulphate-caprolactam-grade/hsn-code-31022100/buyers-directory/", "access": "本轮公开搜索结果公司区块显示；供应商/BOL未公开", "limitations": "历史记录不代表2026年正在采购；不据平台总数计算市场份额。", "evidence_type": "索引待核"}], "official_urls": ["https://meroketetapjaya.com/about", "https://meroketetapjaya.com/files/uploads/2022/12/MerokeZA.pdf", "https://meroketetapjaya.com/files/uploads/2022/12/MerokeFLEX-G1.pdf"], "business": "官网资料介绍印尼农业肥料业务；官方MerokeZA宣传册明确N21%、S24%、白色结晶粉末、50kg。产品在售和历史进口分别记录，不把在售当当前采购。", "contacts": [{"type": "email", "value": "info.meroke@gmail.com", "source_url": "https://meroketetapjaya.com/files/uploads/2022/12/MerokeFLEX-G1.pdf", "note": "官方宣传册公开的总部邮箱，非猜测Gmail；本轮搜索索引可读，原PDF直开404，历史资料有效性待确认；非采购人。"}, {"type": "phone", "value": "(+62-61) 414 8000", "source_url": "https://meroketetapjaya.com/files/uploads/2022/12/MerokeFLEX-G1.pdf", "note": "官方宣传册总部总机；本轮索引可读/原页404，接通与当前有效性未验证。"}, {"type": "website", "value": "https://meroketetapjaya.com/", "source_url": "https://meroketetapjaya.com/about", "note": "官网新站为动态页面；可作为公司入口，未取得当前采购联系页。"}], "discovery_path": "既有Meroke候选→按MerokeZA/caprolactam货描核同品记录→官方结晶粉末规格复核。继续反查同笔供方未成功，暂不能形成Meroke→具名供方→其他买家链。", "priority": "B", "reason": "货描与官网结晶形态有针对性，较贴Yibing capro方向；但同笔供方/BOL缺失，联系方式来自历史宣传册，需先补证。", "fit_gaps": ["N21/S24与白色结晶只是初步产品方向相近；干基口径、水分≤0.2%、游离酸≤0.03%、颗粒分布和杂质未比对。", "进口大单与官网50kg终端包装不能推定该笔运输包装或Yibing贴牌能力。", "需核印尼肥料注册/品牌授权、检验、进口与分销要求；现有能力未知。"], "missing_info": ["同笔完整供应商与BOL原证", "当前官方采购入口及历史邮箱有效性", "当前需求、采购负责人、供方准入与注册要求", "最新MerokeZA COA与包装标签标准", "Yibing可供量、报价、利润与交付条件"], "next_action": "先补同笔供方或由买方确认进口主体；核现行官方联系入口和MerokeZA指标，再决定是否推荐Yibing结晶capro样品。", "checked_date": "2026-10-22", "source_urls": ["https://www.volza.com/p/ammonium-sulphate-caprolactam-grade/hsn-code-31022100/buyers-directory/", "https://www.eximpedia.app/companies/pt-meroke-tetap-jaya/79272482", "https://meroketetapjaya.com/about", "https://meroketetapjaya.com/files/uploads/2022/12/MerokeZA.pdf", "https://meroketetapjaya.com/files/uploads/2022/12/MerokeFLEX-G1.pdf"], "status": "当前采购需求、预算、采购窗口、实际采购人、开放新供方意愿均未确认；未联系；是否在Yibing内部CRM未知。", "source_priority": "B｜条件匹配后跟进（仅研究顺序）", "id": "YC-09", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "已有研究补证", "evidence_types": ["索引待核"], "latest_date": "2025-04-24", "supplier_status": "同笔供方待补", "contact_status": "历史官方资料待更新"}, {"name": "Công Ty TNHH Tân Hùng Thái / Tan Hung Thai Co., Ltd", "country": "越南", "role": "工业、纺织染整及其他行业化工原料进口分销商", "line": "纯碱", "products": ["SODA ASH LIGHT / DISODIUM CARBONATE（实录，工业用途）", "SODA ASH DENSE（官网品类；本轮不将目录当dense提单）"], "trade_records": [{"date": "2024-04-22", "date_type": "TradeImex平台DATE；未说明是否到港或申报日", "supplier": "SANSENG CHEMICAL CO.,LTD", "buyer": "TAN HUNG THAI CO.,LTD", "product": "Soda Ash Light (Disodium carbonate), Na2CO3, textile/dyeing use, CAS 497-19-8", "bol": null, "quantity": "80000 KGM", "declaration_number": "106226755350", "source_url": "https://www.tradeimex.in/company/customs-data/vietnam-28362000-importer/tan-hung-thai-co.%2Cltd", "access": "本轮公开搜索索引样本完整字段可见；直接网页读取失败", "limitations": "申报号不是B/L；另列NUMBER 37662174用途未明，不冒写成提单号。原行未列纯度。样本地址Lot H1, Road No.1, Le Minh Xuan工业区与官网吻合。", "evidence_type": "索引待核"}, {"date": "2022-11-02", "date_type": "ImportGenius列Arrival Date，平台口径原样保留，待复核", "supplier": "HONGXIANG INTERNATIONAL INDUSTRY CO.,LIMITED", "buyer": "Công Ty TNHH Tân Hùng Thái", "product": "Soda Ash Light, Na2CO3, industrial use, CAS 497-19-8", "bol": "010222JJCQDSGA2410013", "quantity": "115000 KGM", "source_url": "https://www.importgenius.com/vietnam/importers/c%C3%B4ng-ty-tnhh-t%C3%A2n-h%C3%B9ng-th%C3%A1i", "access": "本轮公开网页正文第5条，供方/买方/货描/编号同列可读", "limitations": "2022旧记录；页面汇总日期范围截至2022-06-16却列2022-11-02，日期口径有冲突，需凭原申报或B/L复核；不自行改成另一日期，不与2024票拼接。同页Na2SO4不计纯碱。", "evidence_type": "公开货票样本"}], "official_urls": ["http://tanhungthai.com/", "https://tanhungthai.com/lien-he/", "https://tanhungthai.com/soda-bulgari-soda-ash-light", "https://tanhungthai.com/thai-soda-soda-ash-dense"], "business": "本轮http官网正文可读，公司名及Lot H1, Le Minh Xuan工业区地址与贸易样本吻合；官网供应工业/染整化学品，纯碱light产品页索引列50kg/袋及工业用途。https页面部分403，联系方式由http正文和官网联系页索引交叉核对。", "contacts": [{"type": "email", "value": "anle@tanhungthai.com", "source_url": "http://tanhungthai.com/", "note": "官网正文业务入口，具体职责及采购权限未核；https://tanhungthai.com/lien-he/官网索引同列。"}, {"type": "phone", "value": "+84 28 3766 2174；+84 28 3766 2175", "source_url": "http://tanhungthai.com/", "note": "官网原文028.3766 2174/2175，按越南国家码规范显示；非采购专线。"}, {"type": "phone", "value": "+84 909 998 370", "source_url": "https://tanhungthai.com/lien-he/", "note": "本轮官网索引列Hotline 0909.998.370；有效性未测试。"}, {"type": "contact_url", "value": "https://tanhungthai.com/lien-he/", "source_url": "http://tanhungthai.com/", "note": "官网联系入口；本轮https直接读取403，http主页正文可读。"}], "discovery_path": "按明确Soda Ash Light货描找到具名贸易记录→同笔供方与数量核实→官网姓名/地址交叉核主体并取得联系；不是从Yibing供应商页直接发现。", "priority": "C", "reason": "先补近期证据：工业light真实记录、官网用途、可用业务入口及贸易地址能对应，适合先核具体规格与补货。2024样本较2022票新，但仍是历史，不代表现在采购。 本轮将其排在2026年同品记录之后；旧记录日期冲突或索引缺口先解决。", "fit_gaps": ["买方light纯度及干基口径、杂质/溶解性要求", "50kg目录包装与我方包装/MOQ", "厂家追溯、贸易商准入、到岸费用和付款"], "missing_info": ["2024原始申报/BOL及日期字段确认", "近期采购和旧供方是否仍有效", "采购负责人、补货量与时间", "实际工业应用等级及验收方法", "dense是否存在新增需求，不能由官网目录推断"], "next_action": "先按工业light准备COA及包装方案，核采购人和补货窗口；先确认能否接纳新来源，再提供条件报价。", "existing_candidate": false, "checked_date": "2026-10-22", "status": "未联系；当前采购需求和产品匹配未确认", "source_urls": ["https://www.tradeimex.in/company/customs-data/vietnam-28362000-importer/tan-hung-thai-co.%2Cltd", "https://www.importgenius.com/vietnam/importers/c%C3%B4ng-ty-tnhh-t%C3%A2n-h%C3%B9ng-th%C3%A1i", "http://tanhungthai.com/", "https://tanhungthai.com/lien-he/", "https://tanhungthai.com/soda-bulgari-soda-ash-light"], "source_priority": "P1｜先核实工业light采购与供方政策（条件性）", "id": "YC-10", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["索引待核", "公开货票样本"], "latest_date": "2024-04-22", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Công Ty Cổ Phần Thiên Thành Kim / Thien Thanh Kim Joint Stock Company", "country": "越南", "role": "纯碱及工业化学品分销商，兼玻璃贸易和物流", "line": "纯碱", "products": ["SODA ASH LIGHT MIN 99.2%，水玻璃原料，40kg/袋（实录）", "SODA ASH DENSE MIN 99.2%，玻璃原料，1000kg/袋（实录）"], "trade_records": [{"date": "2022-12-04", "date_type": "ImportGenius列Arrival Date，原样保留；日期冲突待复核", "supplier": "NEWAY ENTERPRISES LTD", "buyer": "Công Ty Cổ Phần Thiên Thành Kim", "product": "SODA ASH LIGHT MIN 99.2%, Na2CO3, liquid glass raw material, 40kg/bag", "bol": "310322COAU7237287360", "quantity": "294 TNE", "source_url": "https://www.importgenius.com/vietnam/importers/c%C3%B4ng-ty-c%E1%BB%95-ph%E1%BA%A7n-thi%C3%AAn-th%C3%A0nh-kim", "access": "本轮公开网页正文第1行和样本货描可读", "limitations": "同页汇总范围截至2022-06-16但行列2022-12-04，日期口径冲突待原件复核。货描另注明厂家JIANGXI JINGHAO SALT CHEMICAL CO.,LTD，不能把厂家替换为本票出口供方。不是2026采购。", "evidence_type": "公开货票样本"}, {"date": "2022-12-04", "date_type": "ImportGenius列Arrival Date，原样保留；日期冲突待复核", "supplier": "NEWAY ENTERPRISES LTD", "buyer": "Công Ty Cổ Phần Thiên Thành Kim", "product": "SODA ASH DENSE MIN 99.2%, Na2CO3, glass raw material, 1000kg/bag", "bol": "030422WUSO2208SHP920", "quantity": "270 TNE", "source_url": "https://www.importgenius.com/vietnam/importers/c%C3%B4ng-ty-c%E1%BB%95-ph%E1%BA%A7n-thi%C3%AAn-th%C3%A0nh-kim", "access": "本轮公开网页正文第3行，同笔供方/买方/货品/数量可读", "limitations": "厂家货描同列JIANGXI JINGHAO；与light是不同B/L，不相加推断现年销量。未给堆密度/粒度/杂质等。日期口径同样需复核。", "evidence_type": "公开货票样本"}], "official_urls": ["https://www.thienthanhkim.com.vn/"], "business": "官网正文明确公司分销light/dense且覆盖中国、美国、土耳其等来源，列Jinghao/Haihua等系列及工业/玻璃市场。现有授权及多品牌关系是合作边界需核的依据，不证明愿意增加Yibing。", "contacts": [{"type": "email", "value": "sale@thienthanhkim.com", "source_url": "https://www.thienthanhkim.com.vn/", "note": "官网咨询按钮公开业务邮箱；注意邮箱域为.com，官网为.com.vn，按原文保留不擅改；采购职责未核。"}, {"type": "contact_url", "value": "https://www.thienthanhkim.com.vn/", "source_url": "https://www.thienthanhkim.com.vn/", "note": "本轮可读企业主页/报价咨询入口，未取得独立采购联系页或电话。"}], "discovery_path": "沿纯碱进口货描找到NEWAY→具名买方的light/dense两票→官网核企业名称、纯碱分销路线及邮箱。", "priority": "C", "reason": "先补近期证据：两类纯碱的实际货品、包装和工业用途明确，适配讨论具体；但票据较旧且日期有冲突，官网已有厂牌关系，不按规模或历史吨数推订单。 本轮将其排在2026年同品记录之后；旧记录日期冲突或索引缺口先解决。", "fit_gaps": ["99.2%买方口径与我方干基一致性", "dense堆密度/粒度与玻璃用途，light溶解/杂质要求", "40kg或1000kg包装与Yibing实际能力", "现有品牌/授权是否排他，贸易商供货空间"], "missing_info": ["旧票正确日期与原申报/BOL", "近期纯碱采购、收货主体及税号复核", "允许增加来源的具体型号缺口", "采购/品质审批人、数量及时间", "我方生产来源、COA、包装、MOQ、到岸报价和付款"], "next_action": "先核近期进口和现有厂牌合作限制；以一款light或dense逐项对标，明确需求后才安排样品和报价。", "existing_candidate": false, "checked_date": "2026-10-22", "status": "未联系；历史记录与官网业务相关，当前需求和产品匹配未确认", "source_urls": ["https://www.importgenius.com/vietnam/importers/c%C3%B4ng-ty-c%E1%BB%95-ph%E1%BA%A7n-thi%C3%AAn-th%C3%A0nh-kim", "https://www.thienthanhkim.com.vn/"], "source_priority": "P2｜规格路线清楚，先补近期记录与既有渠道限制", "id": "YC-11", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["公开货票样本"], "latest_date": "2022-12-04", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Công Ty TNHH Thương Mại Dịch Vụ Ngọc Gia Bảo / Ngoc Gia Bao Service and Trading Co., Ltd", "country": "越南", "role": "饲料添加剂与工业化学品进口供应商；本条仅工业纯碱路线", "line": "纯碱", "products": ["SODA ASH LIGHT (Na2CO3) 99.2% MIN，工业清洁剂用途，50kg/袋（实录）"], "trade_records": [{"date": "2022-10-02", "date_type": "ImportGenius列Arrival Date，原样保留，待复核", "supplier": "F AND S INDUSTRY LIMITED", "buyer": "Công Ty Trách Nhiệm Hữu Hạn Thương Mại Dịch Vụ Ngọc Gia Bảo", "product": "Soda Ash Light (Na2CO3) 99.2% Min, detergent manufacture, CAS497-19-8, 50kg/bag", "bol": "250122ZGWUH0210000112", "quantity": "105 TNE", "source_url": "https://www.importgenius.com/vietnam/importers/c%C3%B4ng-ty-tr%C3%A1ch-nhi%E1%BB%87m-h%E1%BB%AFu-h%E1%BA%A1n-th%C6%B0%C6%A1ng-m%E1%BA%A1i-d%E1%BB%8Bch-v%E1%BB%A5-ng%E1%BB%8Dc-gia-b%E1%BA%A3o", "access": "本轮公开网页正文第1行供方/买方/日期/产品/编号可读", "limitations": "旧记录；同页汇总范围截至2022-06-16却列10月ArrivalDate，日期口径冲突需原件复核。不把第2行550TNE Sodium Sulphate算纯碱，也不把其供方EW误配本票。", "evidence_type": "公开货票样本"}], "official_urls": ["https://www.ngocgiabao.com/2024/08/gioi-thieu-ve-cong-ty-tnhh-thuong-mai-dich-vu-ngoc-gia-bao.html", "https://www.ngocgiabao.com/2024/08/lien-he-ngoc-gia-bao-ltd.html"], "business": "本轮官网About和Contact具体页正文可读，税号0312202178，胡志明办公室及仓库；官网自述进口饲料添加剂并提供水处理、染整等基础化工。政府商业目录也列相同税号及官网。纯碱实录是工业清洁剂用途，不转成食品/饲料级。", "contacts": [{"type": "email", "value": "hoangnhi12052001@gmail.com", "source_url": "https://www.ngocgiabao.com/2024/08/lien-he-ngoc-gia-bao-ltd.html", "note": "企业官网公布的业务邮箱，虽为Gmail仍按原文保留；采购职责/当前有效性待核。"}, {"type": "phone", "value": "+84 28 6270 6322", "source_url": "https://www.ngocgiabao.com/2024/08/lien-he-ngoc-gia-bao-ltd.html", "note": "官网办公室电话，原文02862706322。"}, {"type": "phone", "value": "+84 989 397 065；+84 382 890 009", "source_url": "https://www.ngocgiabao.com/2024/08/lien-he-ngoc-gia-bao-ltd.html", "note": "官网Kinh doanh销售电话，未核为采购人；未发送消息。"}, {"type": "contact_url", "value": "https://www.ngocgiabao.com/2024/08/lien-he-ngoc-gia-bao-ltd.html", "source_url": "https://www.ngocgiabao.com/2024/08/lien-he-ngoc-gia-bao-ltd.html", "note": "企业官网具体联系页，本轮可读。"}], "discovery_path": "明确light贸易行→核F AND S对应供方→越南政府企业目录链接官网→官网具体About/Contact页核主体税号和联系。", "priority": "C", "reason": "先补近期证据：light99.2、清洁剂用途及50kg包装让对标有依据，官网业务入口可用；但当前主营饲料添加剂且纯碱票旧，需要先核仍否经营该品及新的采购动因。 本轮将其排在2026年同品记录之后；旧记录日期冲突或索引缺口先解决。", "fit_gaps": ["工业light名义含量与我方干基/杂质口径", "50kg包装与我方实际包装/MOQ", "现终端客户是否仍用该品及替代来源空间", "贸易商供方准入及到岸价/付款"], "missing_info": ["旧票日期口径及近期纯碱记录", "当前工业纯碱产品线、买方用途与规格", "采购负责人、现供方和准入", "补货量、时间及预算", "我方厂源/COA/文件和可靠交期"], "next_action": "先核是否仍做工业light及具体下游；如有现需求，再对照COA、50kg包装与贸易商供货条件；不因饲料业务把工业碱转成饲料报价。", "existing_candidate": false, "checked_date": "2026-10-22", "status": "未联系；当前采购需求及产品匹配未确认", "source_urls": ["https://www.importgenius.com/vietnam/importers/c%C3%B4ng-ty-tr%C3%A1ch-nhi%E1%BB%87m-h%E1%BB%AFu-h%E1%BA%A1n-th%C6%B0%C6%A1ng-m%E1%BA%A1i-d%E1%BB%8Bch-v%E1%BB%A5-ng%E1%BB%8Dc-gia-b%E1%BA%A3o", "https://www.ngocgiabao.com/2024/08/gioi-thieu-ve-cong-ty-tnhh-thuong-mai-dich-vu-ngoc-gia-bao.html", "https://www.ngocgiabao.com/2024/08/lien-he-ngoc-gia-bao-ltd.html", "https://asemconnectvietnam.gov.vn/Business.aspx?Biz_id=21703&ID1=2&ZID1=0"], "source_priority": "P2｜先补近期纯碱业务和工业用途需求", "id": "YC-12", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["公开货票样本"], "latest_date": "2022-10-02", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "Quimtia S.A.", "country": "秘鲁", "role": "化工进口分销商", "line": "纯碱", "products": ["重质纯碱"], "trade_records": [{"date": "2023-08-01", "date_type": "平台 Arrival Date（到港日）", "supplier": "WE IC VE DIS TICARET A.S", "buyer": "QUIMTIA S.A.", "product": "SODA ASH DENSE；袋装25kg，托盘包装", "bol": "MEDUIL487952", "quantity": "平台毛重77,160 kg、60 BOX；货描另写25,000kg及25MT/20尺柜，口径不同，净总量待核", "source_url": "https://es.importgenius.com/importers/quimtia-s-a", "access": "搜索索引（本轮早先正文可读，末次原页仅展示最新5票）", "limitations": "本轮早先读取到该历史行，复核时动态页面只剩最新5票，当前索引可复现；记录版本需保留，原票待核。历史货票而非近期补货信号。货描与整票毛重/件数口径不同，不推算为75吨或其他净值。平台US归类不代表买方在美国；地址与官网RUC20110200201对应秘鲁主体。", "evidence_type": "索引待核"}], "official_urls": ["https://tienda.quimtia.com.pe/contact/", "https://www.quimtia.com/pais/peru/"], "business": "官网展示工业化工分销业务，覆盖水处理、清洁、造纸等用途；秘鲁站页脚公司RUC与贸易主体一致。", "contacts": [{"type": "官网商务邮箱", "value": "contacto.peru@quimtia.com", "source_url": "https://tienda.quimtia.com.pe/contact/", "note": "销售咨询入口，不是已核原料采购联系人。"}, {"type": "官网总机", "value": "+51 1 6306500", "source_url": "https://tienda.quimtia.com.pe/contact/", "note": "可请转进口采购；未核接通。"}], "discovery_path": "重质纯碱 → QUIMTIA进口档案 → WE IC VE DIS TICARET供方 → 官网与税号核主体；供方其他同品买家待下一轮", "priority": "C", "reason": "确有重碱历史进口与对应分销主体，但证据停在2023年，无法证明现在仍采；先补近期同品记录，再投入商务跟进。", "fit_gaps": ["买方含量、粒度、堆密度及当前包装要求未知", "需证明仍外采此品类和有补充供方需求"], "missing_info": ["2025–2026同品新记录或采购方确认", "净重及整票包装口径", "当前规格、现供方、采购负责人和采购窗口", "客户库是否已有关系、付款与交付条件"], "next_action": "先补2025–2026重碱记录或由公司总机确认仍采购；有近期信号后再升级，暂不占第一批报价资源。", "existing_candidate": false, "checked_date": "2026-10-22", "source_urls": ["https://es.importgenius.com/importers/quimtia-s-a", "https://tienda.quimtia.com.pe/contact/", "https://www.quimtia.com/pais/peru/"], "demand_confirmation": "未确认", "outreach_status": "未联系", "source_priority": "C", "id": "YC-13", "list_status": "研究主名单", "product_match": "待确认", "batch_note": "本轮新增研究对象", "evidence_types": ["索引待核"], "latest_date": "2023-08-01", "supplier_status": "具名供方可追查", "contact_status": "有公开公司入口（职责/有效性仍待核）"}, {"name": "SBS Philippines Corporation", "country": "菲律宾", "role": "化工原料进口仓储分销商；有明确供应商准入入口", "line": "纯碱", "products": ["SODA ASH LIGHT FOOD GRADE（2026实录）", "Soda Ash Dense / Light（官网目录；工业路线需单独核需求）"], "trade_records": [{"date": "2026-07-24", "date_type": "NBD列Import日期，未说明具体海关字段", "supplier": "Y***D（平台遮蔽，未确认全称）", "buyer": "SBS PHILIPPINES CORPORATION", "product": "SODA ASH LIGHT FOOD GRADE PACKING IN 25KG PLASTIC BAGS", "bol": null, "quantity": "39.6 MT（货描）；不重复累计平台相同两行", "source_url": "https://en.nbd.ltd/trader/info/32N100114676", "access": "本轮搜索索引中NBD公开贸易行可见；直接打开遇WAF，未取得海关原件", "limitations": "货描内出现YSHC COMPANY LIMITED，但不据此补全遮蔽供方。B/L未公开。原产列CHINA。食品级不能被我方尚未证实的工业等级替代。", "evidence_type": "索引待核"}], "official_urls": ["https://www.sbsph.com/vendors/accreditation-process-2/", "https://www.sbsph.com/contact-us/", "https://www.sbsph.com/wp-content/uploads/2023/03/METALLURGY-SBS-PRODUCT-LINE.pdf", "https://edge.pse.com.ph/companyInformation/form.do?cmpy_id=658"], "business": "官方供应商准入页有化学原料供方申请渠道；公司/交易所资料支持菲律宾化工分销主体。产品目录列light/dense，目录与本条食品级实际记录分开。", "contacts": [{"type": "email", "value": "purchasing@sbsph.com", "source_url": "https://www.sbsph.com/vendors/accreditation-process-2/", "note": "本轮官网正文直接可读，明确用于Trade related Vendors (Chemicals Raw Materials)，是供应商准入入口；仍未核个人采购负责人及实际需求。"}, {"type": "phone", "value": "+63 2 8371-1111", "source_url": "https://www.sbsph.com/contact-us/", "note": "本轮官网联系页索引可见的总机；有效性未测试。"}, {"type": "email", "value": "sales@sbsph.com；sales2@sbsph.com；info@sbsph.com", "source_url": "https://www.sbsph.com/contact-us/", "note": "官网索引销售/通用邮箱；开发供货应先按purchasing准入渠道，不将销售邮箱视作采购人。"}, {"type": "contact_url", "value": "https://www.sbsph.com/vendors/accreditation-process-2/", "source_url": "https://www.sbsph.com/vendors/accreditation-process-2/", "note": "供应商申请说明页；未发送申请或上传文件。"}], "discovery_path": "按SODA ASH明文实录找到NBD具名买方→官网及交易所核菲律宾化工分销角色→取得官网采购准入入口。", "priority": "C", "reason": "较新同品类实录和明确采购渠道值得保留，但本票明确FOOD GRADE；我方现资料没有证明食品级。应先解决等级/厂家文件与准入，不因入口明确就升为合格客户。", "fit_gaps": ["本票食品级与Yibing工业/农业贸易描述有关键差异，当前不能当通过", "食品用途所需批次COA、厂源追溯与买方指定文件未提供", "25kg包装、MOQ、供量与质量责任", "供应商准入及贸易商是否允许"], "missing_info": ["遮蔽供方全称和B/L", "买方是否另有工业light/dense采购，不能由目录推单", "当前食品牌号、验收及文档要求", "Yibing能否供应真实符合要求的食品级产品", "采购负责人、补货时间、数量和商业条件"], "next_action": "先核Yibing能否证明食品等级；不能证明时不推该票食品应用，只问是否存在独立工业纯碱路线。按官网purchasing流程明确供方准入后再投入。", "existing_candidate": false, "checked_date": "2026-10-22", "status": "未联系；食品等级适配未通过确认，当前采购意向未知", "source_urls": ["https://en.nbd.ltd/trader/info/32N100114676", "https://www.sbsph.com/vendors/accreditation-process-2/", "https://www.sbsph.com/contact-us/", "https://www.sbsph.com/wp-content/uploads/2023/03/METALLURGY-SBS-PRODUCT-LINE.pdf", "https://edge.pse.com.ph/companyInformation/form.do?cmpy_id=658"], "source_priority": "P3｜先解食品等级与准入；未证实前暂缓食品报价", "id": "YC-14", "list_status": "研究主名单", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["索引待核"], "latest_date": "2026-07-24", "supplier_status": "同笔供方待补", "contact_status": "有公开公司入口（职责/有效性仍待核）"}], "pending_rows": [{"name": "Southland Consumers Cooperative", "country": "菲律宾", "role": "政府旧许可表列肥料进口商/全国分销商（许可当前有效性未核）", "line": "硫酸铵", "existing_candidate": false, "products": ["AMMONIUM SULPHATE (CAPROLACTAM GRADE) IN BULK"], "trade_records": [{"date": "2024-11-27", "date_type": "TradeImeX Sample Shipment的DATE/报关样本日期", "supplier": "FIBRANT (SHANGHAI) CHEMICAL CO.,（公开字段截断，法律后缀未补猜）", "buyer": "SOUTHLAND CONSUMERS COOPERATIVE", "product": "12,200.00 MT AMMONIUM SULPHATE (CAPROLACTAM GRADE) IN BULK", "bol": "PT2024911", "quantity": "12,200,000 Kilogram（QUANTITY/NETMASSKGS）", "source_url": "https://www.tradeimex.in/company/customs-data/Philippines-31022100000-importer/southland-consumers-cooperative", "access": "本轮直接读取公开完整样本，双方/DATE/BL/货品/数量同表", "limitations": "平台样本非原始提单；供应商名末尾截断；当前官方企业网站及公共联系方式未核。", "evidence_type": "公开货票样本"}], "official_urls": [], "business": "菲律宾FPA截至2025-07-31许可表列Tagum进口商/全国分销商以及Davao制造/分装角色，部分许可当时到期日为2025-10-13；不能当作2026仍有效。", "contacts": [], "regulatory_urls": ["https://fpa.da.gov.ph/wp-content/uploads/2025/08/License-Monitoring-2025-07-31.pdf", "https://cda.gov.ph/wp-content/uploads/2025/08/For-posting_2024-data.pdf"], "discovery_path": "Atlas同HS进口商页面关联目录→Southland公开同品级样本→政府合作社/肥料许可旧表核身份；未获得公司官网联系入口，单列待补，不冒充可开发主名单。", "priority": "D", "reason": "贸易证据具体，但联系方式与当前许可均有实质缺口，不能以贸易网站锁定的“Email/Phone”文字当已取得联系方式。", "fit_gaps": ["Yibing capro规格、单批12,200吨散装能力均未验证。", "进口主体、现行许可、品牌/用途与决策链待核。"], "missing_info": ["当前官方企业网站/联系方式", "当前肥料进口许可及法律主体", "供方全称与提单原件", "当前需求及采购负责人", "质量指标与Yibing供货交付能力"], "next_action": "先从官方合作社登记/肥料监管最新资料核主体与许可，再补真实公开联系入口；此前不进入外联名单。", "checked_date": "2026-10-22", "source_urls": ["https://www.tradeimex.in/company/customs-data/Philippines-31022100000-importer/southland-consumers-cooperative", "https://fpa.da.gov.ph/wp-content/uploads/2025/08/License-Monitoring-2025-07-31.pdf", "https://cda.gov.ph/wp-content/uploads/2025/08/For-posting_2024-data.pdf"], "status": "当前采购需求、预算、采购窗口、实际采购人、开放新供方意愿均未确认；未联系；是否在Yibing内部CRM未知。", "source_priority": "D｜暂缓，先补官方联系入口及当前主体资质", "id": "YC-15", "list_status": "待补联系", "demand_confirmation": "未确认", "product_match": "待确认", "outreach_status": "未联系", "batch_note": "本轮新增研究对象", "evidence_types": ["公开货票样本"], "latest_date": "2024-11-27", "supplier_status": "具名供方可追查", "contact_status": "无已核官方入口"}], "status": "历史采购证据不等于当前采购需求。全部未联系；需与Yibing客户库排重。"}</script><script>/* Yibing evidence network. Standalone SVG + DOM; no requests or dependencies. */
+(function (global) {
+  'use strict';
+  const NS = 'http://www.w3.org/2000/svg';
+  const COLORS = { paper: '#F4F1EA', ink: '#1D1B17', red: '#B4462B', muted: '#6B655B', line: '#D9D3C7', soft: '#ECE7DC' };
+  const STYLE_ID = 'yibing-network-component-style';
+  let serial = 0;
+  let state = null;
+
+  function svgEl(tag, attrs, text) {
+    const node = document.createElementNS(NS, tag);
+    Object.entries(attrs || {}).forEach(([key, value]) => node.setAttribute(key, String(value)));
+    if (text != null) node.textContent = String(text);
+    return node;
+  }
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = String(text);
+    return node;
+  }
+  function text(value, fallback) {
+    return value == null || value === '' ? (fallback || '未公开') : String(value);
+  }
+  function safeUrl(value) {
+    try {
+      const u = new URL(String(value));
+      return /^https?:$/.test(u.protocol) ? u.href : null;
+    } catch (_) { return null; }
+  }
+  function link(label, value) {
+    const url = safeUrl(value);
+    if (!url) return el('span', 'yn-muted', label + '（无可用公开链接）');
+    const a = el('a', '', label);
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    return a;
+  }
+  function list(values) {
+    const ul = el('ul', 'yn-list');
+    (values || []).forEach(value => ul.append(el('li', '', value)));
+    return ul;
+  }
+  function canonicalSupplier(value) {
+    // Only typography is normalized. No legal suffix, subsidiary or manufacturer is inferred.
+    return String(value).normalize('NFKC').toUpperCase()
+      .replace(/[(（]公开字段截断[^)）]*[)）]/g, '')
+      .replace(/[\s.,，。'’"“”·\-]/g, '');
+  }
+  function knownSupplier(value) {
+    if (typeof value !== 'string' || !value.trim()) return false;
+    const v = value.trim();
+    return !(/\*|遮蔽|未公开|未确认全称|未知|待补|锁定/.test(v)
+      || /^(?:N\/?A|NONE|NULL|UNKNOWN|[-—–]+)$/i.test(v));
+  }
+  function indexOnly(record) {
+    if (/索引/.test(record.evidence_type || '')) return true;
+    if (/搜索索引|搜索结果/.test(record.access || '')) return true;
+    if (/官方海关|公开货票样本/.test(record.evidence_type || '')) return false;
+    return !/直接读|直接可读|正文.*可读|公开正文/.test(record.access || '');
+  }
+  function normalizeRows(input) {
+    const rows = Array.isArray(input) ? input : (input && Array.isArray(input.rows)
+      ? input.rows.concat(input.pending_rows || []) : []);
+    const used = new Set();
+    return rows.filter(row => row && typeof row === 'object').map((row, i) => {
+      const id = String(row.id || ('YN-' + (i + 1)));
+      if (used.has(id)) return null;
+      used.add(id);
+      return Object.assign({}, row, { id, trade_records: Array.isArray(row.trade_records) ? row.trade_records : [] });
+    }).filter(Boolean);
+  }
+  function buildGraph(rows) {
+    const suppliers = new Map();
+    const buyers = new Map(rows.map(row => [row.id, { key: 'b:' + row.id, row, edges: [], missing: [] }]));
+    const edges = [];
+    rows.forEach(row => row.trade_records.forEach((record, i) => {
+      const item = { row, record, recordIndex: i };
+      const buyer = buyers.get(row.id);
+      if (!knownSupplier(record.supplier)) {
+        buyer.missing.push(item);
+        return;
+      }
+      const key = canonicalSupplier(record.supplier);
+      if (!suppliers.has(key)) suppliers.set(key, { key: 's:' + key, canonical: key, name: record.supplier, aliases: new Set(), edges: [], items: [] });
+      const supplier = suppliers.get(key);
+      supplier.aliases.add(record.supplier);
+      supplier.items.push(item);
+      const kind = indexOnly(record) ? 'index' : 'direct';
+      // Different evidence classes between the same pair retain separate lines.
+      let edge = edges.find(e => e.supplier === supplier && e.buyer === buyer && e.kind === kind);
+      if (!edge) {
+        edge = { key: 'e:' + edges.length, supplier, buyer, kind, items: [] };
+        edges.push(edge);
+        supplier.edges.push(edge);
+        buyer.edges.push(edge);
+      }
+      edge.items.push(item);
+    }));
+    const visited = new Set();
+    const components = [];
+    buyers.forEach(start => {
+      if (!start.edges.length || visited.has(start.key)) return;
+      const todo = [start], bs = [], ss = [];
+      while (todo.length) {
+        const node = todo.pop();
+        if (visited.has(node.key)) continue;
+        visited.add(node.key);
+        if (node.row) {
+          bs.push(node);
+          node.edges.forEach(edge => todo.push(edge.supplier));
+        } else {
+          ss.push(node);
+          node.edges.forEach(edge => todo.push(edge.buyer));
+        }
+      }
+      bs.sort((a, b) => rows.indexOf(a.row) - rows.indexOf(b.row));
+      components.push({ buyers: bs, suppliers: ss, edges: edges.filter(e => bs.includes(e.buyer)) });
+    });
+    return {
+      rows, suppliers, buyers, edges, components,
+      missing: [...buyers.values()].filter(b => b.missing.length),
+      recordCount: rows.reduce((n, row) => n + row.trade_records.length, 0),
+      missingCount: [...buyers.values()].reduce((n, buyer) => n + buyer.missing.length, 0)
+    };
+  }
+  function installStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = el('style');
+    style.id = STYLE_ID;
+    style.textContent = [
+      '.yn-side{color:#1D1B17;font:14px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}',
+      '.yn-side h3{font-family:"Songti SC",Georgia,serif;font-size:23px;line-height:1.4;margin:0 0 12px;font-weight:600}',
+      '.yn-side h4{font-size:13px;margin:22px 0 8px}.yn-side p{margin:8px 0}.yn-side a{color:#B4462B;text-underline-offset:3px;overflow-wrap:anywhere}',
+      '.yn-side .yn-kicker{font-size:11px;letter-spacing:.08em;color:#6B655B;margin:0 0 10px}.yn-side .yn-muted{color:#6B655B;font-size:12px}',
+      '.yn-side .yn-note{border-left:2px solid #B4462B;background:#ECE7DC;padding:11px 13px;font-size:12px;margin:16px 0}',
+      '.yn-side .yn-list{padding-left:19px;margin:8px 0}.yn-side .yn-list li+li{margin-top:7px}',
+      '.yn-side .yn-record{border-top:1px solid #D9D3C7;padding:15px 0}.yn-side .yn-record h4{font-size:13px;margin:0 0 8px}',
+      '.yn-side .yn-record p{font-size:12px;margin:6px 0}.yn-side .yn-record .yn-product{color:#1D1B17;font-weight:600}',
+      '.yn-side details{border-top:1px solid #D9D3C7;padding-top:11px;margin-top:18px}.yn-side summary{cursor:pointer;color:#6B655B;font-size:12px}',
+      '.yn-side .yn-button{display:inline-block;background:#1D1B17;color:#F4F1EA;border:1px solid #1D1B17;padding:10px 15px;margin:12px 8px 0 0;border-radius:2px;font:inherit;font-size:12px;cursor:pointer}',
+      '.yn-side .yn-button.secondary{background:transparent;color:#1D1B17;border-color:#D9D3C7}',
+      '.yn-side :focus-visible{outline:2px solid #B4462B;outline-offset:4px}',
+      '.yn-side .yn-selection-status{font-size:11px;color:#6B655B;margin:0 0 12px}',
+      '@media(max-width:680px){.yn-side h3{font-size:21px}.yn-side{font-size:13px}}'
+    ].join('\n');
+    document.head.append(style);
+  }
+  function displayBuyer(row) {
+    const name = String(row.display_name || row.name || row.id);
+    const slash = name.split(/\s+\/\s+/);
+    return slash.length > 1 ? slash[slash.length - 1] : name;
+  }
+  function displaySupplier(supplier) {
+    return String(supplier.name).replace(/（公开字段截断[^）]*）/g, '').trim();
+  }
+  function wrapLabel(value, maxChars, maxLines) {
+    const units = value => [...value].reduce((n, ch) => n + (/[^\u0000-\u00ff]/.test(ch) ? 2 : 1), 0);
+    const words = String(value).split(/\s+/).filter(Boolean);
+    const lines = [];
+    let current = '';
+    words.forEach(word => {
+      // Long unbroken labels are split without cutting Unicode code points.
+      const pieces = units(word) > maxChars
+        ? [...word].reduce((a, ch) => {
+          const at = a.length - 1;
+          if (units(a[at] + ch) > maxChars) a.push(ch);
+          else a[at] += ch;
+          return a;
+        }, [''])
+        : [word];
+      pieces.forEach(piece => {
+        if (current && units(current + ' ' + piece) > maxChars) { lines.push(current); current = piece; }
+        else current += (current ? ' ' : '') + piece;
+      });
+    });
+    if (current) lines.push(current);
+    if (lines.length <= maxLines) return lines;
+    const out = lines.slice(0, maxLines);
+    out[maxLines - 1] = out[maxLines - 1].replace(/[.,;，。]+$/, '').slice(0, Math.max(1, maxChars - 1)) + '…';
+    return out;
+  }
+  function measureWidth(svg) {
+    const own = svg.getBoundingClientRect().width;
+    const parent = svg.parentElement && svg.parentElement.getBoundingClientRect().width;
+    return Math.max(280, Math.min(1180, Math.round(own || parent || 960)));
+  }
+  function addSvgText(parent, value, x, y, attrs) {
+    const node = svgEl('text', Object.assign({ x, y }, attrs || {}), value);
+    parent.append(node);
+    return node;
+  }
+  function drawNode(s, parent, spec) {
+    const { x, y, width, height, label, sub, key, selection, buyer, missing } = spec;
+    const g = svgEl('g', {
+      class: 'yn-node' + (buyer ? ' yn-buyer' : ' yn-supplier') + (missing ? ' yn-missing-node' : ''),
+      transform: 'translate(' + x + ' ' + y + ')', role: 'button', tabindex: '0',
+      'aria-label': (buyer ? '买方 ' : '供方 ') + label + '。查看证据与待补信息',
+      'data-yn-key': key, 'aria-pressed': String(s.selectedKey === key)
+    });
+    if (s.selectedKey === key) g.classList.add('yn-selected');
+    g.append(svgEl('title', {}, label));
+    g.append(svgEl('rect', { x: 0, y: 0, width, height, rx: 3, class: 'yn-node-box' }));
+    const font = s.width < 520 ? 10.5 : 12;
+    const chars = Math.max(12, Math.floor((width - 24) / (font * .57)));
+    const lines = wrapLabel(label, chars, 3);
+    const start = 18;
+    lines.forEach((line, i) => addSvgText(g, line, 12, start + i * 14, { class: 'yn-node-name', 'font-size': font }));
+    const subChars = Math.max(12, Math.floor((width - 24) / (s.width < 520 ? 5.5 : 6)));
+    addSvgText(g, wrapLabel(sub, subChars, 1)[0] || '', 12, height - 10, { class: 'yn-node-sub', 'font-size': s.width < 520 ? 9 : 10 });
+    function activate() { select(s, Object.assign({}, selection, { key })); }
+    g.addEventListener('click', activate);
+    g.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); }
+      else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const nodes = [...s.svg.querySelectorAll('.yn-node')];
+        const index = nodes.indexOf(g);
+        const target = nodes[(index + (event.key === 'ArrowDown' ? 1 : -1) + nodes.length) % nodes.length];
+        if (target) target.focus();
+      }
+    });
+    parent.append(g);
+    return { x, y, width, height, centerY: y + height / 2 };
+  }
+  function render(s) {
+    if (!s || s !== state) return;
+    const svg = s.svg, graph = s.graph;
+    const width = measureWidth(svg);
+    s.width = width;
+    s.lastWidth = width;
+    const compact = width < 680;
+    const pad = compact ? 6 : 18;
+    const gap = compact ? Math.max(30, width * .10) : Math.min(190, width * .22);
+    const nodeWidth = Math.min(350, (width - pad * 2 - gap) / 2);
+    const leftX = pad;
+    const rightX = width - pad - nodeWidth;
+    const nodeHeight = compact ? 82 : 82;
+    const rowGap = compact ? 16 : 14;
+    let y = compact ? 132 : 112;
+    svg.replaceChildren();
+    svg.setAttribute('viewBox', '0 0 ' + width + ' 400');
+    svg.setAttribute('role', 'group');
+    svg.setAttribute('aria-labelledby', s.uid + '-title ' + s.uid + '-desc');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
+    svg.style.display = 'block';
+    svg.style.width = '100%';
+    svg.style.height = 'auto';
+    svg.style.maxWidth = '1180px';
+    svg.classList.add('yn-svg');
+    svg.classList.toggle('yn-paused', s.paused || s.reducedMotion);
+    svg.append(svgEl('title', { id: s.uid + '-title' }, '已核货票中的供方与买方关系'));
+    svg.append(svgEl('desc', { id: s.uid + '-desc' }, '共' + graph.rows.length + '家研究对象、' + graph.recordCount + '条记录。箭头是供方到收货买方。实线代表正文可读、虚线代表搜索索引待核；不代表当前采购意向。点选节点或按Enter查看证据。供方缺失或遮蔽的记录在下方单列，不连接虚构供方。'));
+    const style = svgEl('style', {}, [
+      '.yn-svg{background:#F4F1EA;color:#1D1B17;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}',
+      '.yn-svg .yn-heading{font-size:12px;fill:#6B655B;letter-spacing:.06em}.yn-svg .yn-small{font-size:10px;fill:#6B655B}',
+      '.yn-svg .yn-line{fill:none;stroke:#6B655B;stroke-width:1.2}.yn-svg .yn-line.index{stroke-dasharray:5 5}',
+      '.yn-svg .yn-runner{fill:none;stroke:#B4462B;stroke-width:1.9;stroke-dasharray:3 60;animation:yn-evidence-travel 4s linear infinite;pointer-events:none;opacity:.8}',
+      '.yn-svg.yn-paused .yn-runner{animation-play-state:paused}.yn-svg .yn-node{cursor:pointer;outline:none}',
+      '.yn-svg .yn-node-box{fill:#F4F1EA;stroke:#B8B0A2;stroke-width:1}.yn-svg .yn-buyer .yn-node-box{fill:#FAF8F2}',
+      '.yn-svg .yn-supplier .yn-node-box{fill:#ECE7DC}.yn-svg .yn-missing-node .yn-node-box{stroke-dasharray:3 4}',
+      '.yn-svg .yn-node:hover .yn-node-box,.yn-svg .yn-node:focus .yn-node-box,.yn-svg .yn-selected .yn-node-box{stroke:#B4462B;stroke-width:2}',
+      '.yn-svg .yn-node-name{fill:#1D1B17;font-weight:500}.yn-svg .yn-node-sub{fill:#6B655B}',
+      '.yn-svg .yn-selected .yn-node-sub{fill:#B4462B}.yn-svg .yn-divider{stroke:#D9D3C7;stroke-width:1}',
+      '@keyframes yn-evidence-travel{to{stroke-dashoffset:-126}}',
+      '@media(prefers-reduced-motion:reduce){.yn-svg .yn-runner{animation:none;display:none}}'
+    ].join('\n'));
+    svg.append(style);
+    const defs = svgEl('defs');
+    const marker = svgEl('marker', { id: s.uid + '-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 5, markerHeight: 5, orient: 'auto' });
+    marker.append(svgEl('path', { d: 'M0,0 L8,4 L0,8 Z', fill: COLORS.muted }));
+    defs.append(marker);
+    svg.append(defs);
+    addSvgText(svg, '具名供方 → 收货买方', pad, 21, { class: 'yn-heading' });
+    addSvgText(svg, graph.rows.length + ' 家对象 · ' + graph.recordCount + ' 条记录 · ' + graph.suppliers.size + ' 个具名供方', pad, 41, { class: 'yn-small' });
+    const legendY = 62;
+    svg.append(svgEl('line', { x1: pad, y1: legendY - 3, x2: pad + 30, y2: legendY - 3, class: 'yn-line' }));
+    addSvgText(svg, '正文可读', pad + 38, legendY, { class: 'yn-small' });
+    const lx = compact ? width / 2 : 185;
+    svg.append(svgEl('line', { x1: lx, y1: legendY - 3, x2: lx + 30, y2: legendY - 3, class: 'yn-line index' }));
+    addSvgText(svg, '索引待核', lx + 38, legendY, { class: 'yn-small' });
+    addSvgText(svg, compact ? '点节点看下方 / 旁侧证据；等级仅核实顺序' : '点选节点查看证据；A/B/C/D仅核实顺序，不是采购意向', pad, compact ? 84 : 84, { class: 'yn-small' });
+    addSvgText(svg, '供方（不补猜法定后缀）', leftX, y - 14, { class: 'yn-small' });
+    addSvgText(svg, '买方 / 研究对象', rightX, y - 14, { class: 'yn-small' });
+    graph.components.forEach((component, ci) => {
+      const count = Math.max(component.suppliers.length, component.buyers.length);
+      const blockHeight = count * nodeHeight + (count - 1) * rowGap;
+      const positions = new Map();
+      function arrange(nodes, x) {
+        const contentHeight = nodes.length * nodeHeight + (nodes.length - 1) * rowGap;
+        const top = y + (blockHeight - contentHeight) / 2;
+        nodes.forEach((node, i) => positions.set(node.key, { x, y: top + i * (nodeHeight + rowGap), width: nodeWidth, height: nodeHeight }));
+      }
+      arrange(component.suppliers, leftX);
+      arrange(component.buyers, rightX);
+      component.edges.forEach((edge, ei) => {
+        const from = positions.get(edge.supplier.key), to = positions.get(edge.buyer.key);
+        const fx = from.x + from.width, fy = from.y + from.height / 2;
+        const tx = to.x, ty = to.y + to.height / 2;
+        const bend = Math.max(15, (tx - fx) * .48);
+        const d = 'M' + fx + ',' + fy + ' C' + (fx + bend) + ',' + fy + ' ' + (tx - bend) + ',' + ty + ' ' + tx + ',' + ty;
+        const edgeGroup = svgEl('g', { 'data-yn-edge': edge.key });
+        edgeGroup.append(svgEl('title', {}, edge.supplier.name + ' → ' + edge.buyer.row.name + '；' + edge.items.length + '条' + (edge.kind === 'index' ? '索引待核记录' : '正文可读记录')));
+        edgeGroup.append(svgEl('path', { d, class: 'yn-line ' + edge.kind, 'marker-end': 'url(#' + s.uid + '-arrow)' }));
+        const runner = svgEl('path', { d, class: 'yn-runner', style: 'animation-delay:-' + ((ci + ei) % 7) * .31 + 's' });
+        edgeGroup.append(runner);
+        svg.append(edgeGroup);
+      });
+      component.suppliers.forEach(supplier => {
+        const pos = positions.get(supplier.key);
+        drawNode(s, svg, Object.assign(pos, {
+          label: displaySupplier(supplier),
+          sub: /截断/.test(supplier.name) ? supplier.items.length + ' 条 · 名称字段截断' : supplier.items.length + ' 条货票 · ' + new Set(supplier.items.map(i => i.row.id)).size + ' 家买方',
+          key: supplier.key, buyer: false, selection: { type: 'supplier', supplier }
+        }));
+      });
+      component.buyers.forEach(buyer => {
+        const row = buyer.row, pos = positions.get(buyer.key);
+        drawNode(s, svg, Object.assign(pos, {
+          label: displayBuyer(row),
+          sub: row.id + ' · ' + text(row.priority, '?') + ' · ' + row.country + (buyer.missing.length ? ' · 另有待补' : ''),
+          key: buyer.key, buyer: true, selection: { type: 'buyer', buyer }
+        }));
+      });
+      y += blockHeight + (compact ? 26 : 24);
+      if (ci < graph.components.length - 1) svg.append(svgEl('line', { x1: pad, x2: width - pad, y1: y - 12, y2: y - 12, class: 'yn-divider' }));
+    });
+    if (graph.missing.length) {
+      y += 16;
+      svg.append(svgEl('line', { x1: pad, x2: width - pad, y1: y - 14, y2: y - 14, class: 'yn-divider' }));
+      addSvgText(svg, '供方待补 · 不连假边', pad, y + 2, { class: 'yn-heading' });
+      addSvgText(svg, graph.missing.length + ' 家买方含 ' + graph.missingCount + ' 条未具名 / 遮蔽供方记录', pad, y + 22, { class: 'yn-small' });
+      y += 40;
+      graph.missing.forEach((buyer, i) => {
+        const col = i % 2, rowIndex = Math.floor(i / 2);
+        drawNode(s, svg, {
+          x: col ? rightX : leftX, y: y + rowIndex * (nodeHeight + rowGap),
+          width: nodeWidth, height: nodeHeight, label: displayBuyer(buyer.row),
+          sub: buyer.row.id + ' · ' + buyer.missing.length + ' 条待补供方',
+          key: 'm:' + buyer.row.id, buyer: true, missing: true,
+          selection: { type: 'missing', buyer }
+        });
+      });
+      y += Math.ceil(graph.missing.length / 2) * (nodeHeight + rowGap);
+      const notes = wrapLabel('同一买方可能同时有具名和待补货票；不重复计企业。贸易痕迹不代表当前采购意向。', Math.max(24, Math.floor((width - pad * 2) / 5.5)), 3);
+      notes.forEach((line, i) => addSvgText(svg, line, pad, y + i * 15, { class: 'yn-small' }));
+      y += notes.length * 15;
+    }
+    if (!graph.rows.length) {
+      addSvgText(svg, '当前没有可展示的研究对象。', pad, y + 24, { class: 'yn-heading' });
+      y += 60;
+    } else if (!graph.components.length && !graph.missing.length) {
+      addSvgText(svg, '没有可连线的货票；当前资料仍待补。', pad, y + 24, { class: 'yn-heading' });
+      y += 60;
+    }
+    const height = Math.ceil(y + 24);
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    svg.setAttribute('height', height);
+    svg.style.aspectRatio = width + ' / ' + height;
+    svg.dataset.ynBuyers = String(graph.rows.length);
+    svg.dataset.ynSuppliers = String(graph.suppliers.size);
+    svg.dataset.ynRecords = String(graph.recordCount);
+    svg.dataset.ynEdges = String(graph.edges.length);
+    svg.dataset.ynMissingRecords = String(graph.missingCount);
+  }
+  function sideBase(s, title, kicker) {
+    s.side.replaceChildren();
+    s.side.classList.add('yn-side');
+    s.side.setAttribute('role', 'region');
+    s.side.setAttribute('aria-label', '供应关系证据详情');
+    const status = el('p', 'yn-selection-status', title ? '已选中：' + title : '关系图概览');
+    status.setAttribute('aria-live', 'polite');
+    s.side.append(status);
+    if (kicker) s.side.append(el('p', 'yn-kicker', kicker));
+    if (title) s.side.append(el('h3', '', title));
+  }
+  function openButton(s, row, label) {
+    const button = el('button', 'yn-button', label || ('查看 ' + row.id + ' 企业详情 →'));
+    button.type = 'button';
+    button.addEventListener('click', () => {
+      if (typeof s.onOpen === 'function') s.onOpen(row.id);
+      else s.side.dispatchEvent(new CustomEvent('yibing:open', { bubbles: true, detail: { id: row.id } }));
+    });
+    return button;
+  }
+  function renderRecords(parent, items) {
+    items.forEach(({ row, record }, index) => {
+      const article = el('article', 'yn-record');
+      article.append(el('h4', '', (index + 1) + '. ' + text(record.date) + ' · ' + (indexOnly(record) ? '索引待核' : '正文可读')));
+      article.append(el('p', 'yn-muted', '日期口径：' + text(record.date_type)));
+      article.append(el('p', 'yn-product', text(record.product)));
+      article.append(el('p', '', text(record.supplier, '供方未公开') + ' → ' + text(record.buyer, row.name)));
+      article.append(el('p', '', 'B/L：' + text(record.bol) + '；数量 / 重量：' + text(record.quantity)));
+      article.append(link('查看该条公开来源 ↗', record.source_url));
+      article.append(el('p', 'yn-muted', '可见范围：' + text(record.access)));
+      article.append(el('p', 'yn-muted', '证据边界：' + text(record.limitations)));
+      parent.append(article);
+    });
+  }
+  function rowDetails(s, buyer, onlyMissing) {
+    const row = buyer.row;
+    sideBase(s, row.name, row.id + ' / ' + row.country + ' / ' + text(row.priority) + '级：仅核实顺序');
+    s.side.append(el('p', 'yn-note', '历史贸易或在售资料不代表当前采购。需求、供方开放、采购人及Yibing产品与交付适配均未确认；未联系。'));
+    if (onlyMissing) s.side.append(el('p', '', '当前展示该买方供方未公开或被遮蔽的货票；不把它们接到现有具名供方上。'));
+    s.side.append(el('p', '', text(row.business, row.role)));
+    s.side.append(openButton(s, row));
+    s.side.append(el('h4', '', '先补的缺项'));
+    s.side.append(list((row.missing_info || ['当前采购需求、采购人及交付适配待核。']).slice(0, 3)));
+    s.side.append(el('h4', '', onlyMissing ? '供方待补记录' : '具体货票与来源'));
+    const items = onlyMissing ? buyer.missing : row.trade_records.map(record => ({ row, record }));
+    if (items.length) renderRecords(s.side, items);
+    else s.side.append(el('p', 'yn-muted', '尚无可展示的具体货票。'));
+    const details = el('details');
+    details.append(el('summary', '', '为什么核实它 / 产品和商业缺口'));
+    details.append(el('p', '', text(row.reason)));
+    details.append(list([...(row.fit_gaps || []), ...(row.missing_info || [])]));
+    details.append(el('p', '', '下一步：' + text(row.next_action)));
+    s.side.append(details);
+    const contacts = el('details');
+    contacts.append(el('summary', '', '公开联系入口与角色（尚非采购人）'));
+    (row.contacts || []).forEach(contact => {
+      const p = el('p');
+      p.append(el('b', '', text(contact.value)), document.createTextNode(' '), link('来源 ↗', contact.source_url));
+      p.append(el('span', 'yn-muted', ' — ' + text(contact.note)));
+      contacts.append(p);
+    });
+    if (!(row.contacts || []).length) contacts.append(el('p', 'yn-muted', '官方公共联系方式仍待补，不补猜邮箱。'));
+    s.side.append(contacts);
+  }
+  function supplierDetails(s, supplier) {
+    sideBase(s, supplier.name, '供方记录 / ' + supplier.items.length + '条货票');
+    s.side.append(el('p', 'yn-note', '仅显示已取得同笔证据的供货关系。不把相似进口商、全品类买家或当前采购意向加进图中。'));
+    if (supplier.aliases.size > 1) s.side.append(el('p', 'yn-muted', '页面写法仅合并空格与标点差异：' + [...supplier.aliases].join(' / ')));
+    const buyers = [...new Map(supplier.items.map(item => [item.row.id, item.row])).values()];
+    s.side.append(el('p', '', '已核关联：' + buyers.map(row => row.name).join('；') + '。'));
+    s.side.append(el('p', 'yn-muted', '仍须逐家核实：现行需求、采购负责人、供方准入和Yibing实际规格 / 交付能力；历史同供方不证明愿意更换或新增来源。'));
+    buyers.forEach(row => s.side.append(openButton(s, row, row.id + ' · 查看企业详情 →')));
+    s.side.append(el('h4', '', '逐笔货品、日期与来源'));
+    renderRecords(s.side, supplier.items);
+    const gaps = el('details');
+    gaps.append(el('summary', '', '这些买方仍缺什么'));
+    buyers.forEach(row => {
+      gaps.append(el('h4', '', row.name));
+      gaps.append(list(row.missing_info || ['现行需求、采购人、产品与交付匹配待核。']));
+    });
+    s.side.append(gaps);
+  }
+  function overview(s) {
+    sideBase(s, '先看真实关系，再核当前需求', '公开证据关系图 / 非实时抓取');
+    const g = s.graph;
+    s.side.append(el('p', '', g.rows.length + ' 家研究对象，' + g.recordCount + ' 条货票记录；' + g.suppliers.size + ' 个具名供方。'));
+    s.side.append(el('p', 'yn-note', '线上的动效只讲解已整理的研究数据，不表示正在抓取、已联系或产生新订单。实线正文可读，虚线索引待核；两者都不等于原始提单已取得。'));
+    s.side.append(list([
+      '箭头方向：具体货票供方 → 收货买方；海外买方国家不代表供方原产地或每票最终运输路径。',
+      '有同笔货品、双方和来源才连线；供方遮蔽、未公开的 ' + g.missingCount + ' 条记录单列，不用其他货票的供方补猜。',
+      '供方名称只合并空格和标点差异，不自行合并法律主体、子公司、制造商或品牌。',
+      'A/B/C/D是核实顺序，仍须先过品级、形态、包装、供量、物流与付款条件。'
+    ]));
+    const shared = [...g.suppliers.values()].find(supplier => supplier.canonical.includes('XINGHUA') && new Set(supplier.items.map(i => i.row.id)).size > 1);
+    if (shared) {
+      s.side.append(el('p', 'yn-muted', '当前图中XING HUA分别连接Quimpac和Solvesa；Solvesa货品尚未区分轻、重质。'));
+      const button = el('button', 'yn-button', '看 XING HUA 共用供方证据 →');
+      button.type = 'button';
+      button.addEventListener('click', () => select(s, { type: 'supplier', supplier: shared, key: shared.key }));
+      s.side.append(button);
+    }
+    s.side.append(el('p', 'yn-muted', '操作：点击节点或按Tab定位、Enter展开；上下方向键切换节点。窄屏可继续向下读关系图和详情。'));
+  }
+  function select(s, selection) {
+    if (s !== state) return;
+    s.selectedKey = selection.key;
+    s.selection = selection;
+    s.svg.querySelectorAll('.yn-node').forEach(node => {
+      const selected = node.getAttribute('data-yn-key') === selection.key;
+      node.classList.toggle('yn-selected', selected);
+      node.setAttribute('aria-pressed', String(selected));
+    });
+    if (selection.type === 'supplier') supplierDetails(s, selection.supplier);
+    else rowDetails(s, selection.buyer, selection.type === 'missing');
+  }
+  function dispose(s) {
+    if (!s) return;
+    if (s.resizeObserver) s.resizeObserver.disconnect();
+    if (s.onResize) global.removeEventListener('resize', s.onResize);
+    if (s.media && s.onMedia && s.media.removeEventListener) s.media.removeEventListener('change', s.onMedia);
+    if (s.frame) global.cancelAnimationFrame(s.frame);
+  }
+  function mount(options) {
+    const opts = options || {};
+    if (!opts.svg || opts.svg.namespaceURI !== NS || !opts.side) throw new TypeError('YibingNetwork.mount requires a real SVG element and a details DOM element.');
+    dispose(state);
+    installStyle();
+    const media = typeof global.matchMedia === 'function' ? global.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    state = {
+      uid: 'yn-' + (++serial), svg: opts.svg, side: opts.side,
+      rows: normalizeRows(opts.rows), onOpen: opts.onOpen,
+      paused: Boolean(opts.paused), reducedMotion: Boolean(media && media.matches),
+      media, selectedKey: null, selection: null, lastWidth: 0, frame: 0
+    };
+    const s = state;
+    s.graph = buildGraph(s.rows);
+    render(s);
+    overview(s);
+    s.onResize = () => {
+      if (s.frame) global.cancelAnimationFrame(s.frame);
+      s.frame = global.requestAnimationFrame(() => {
+        s.frame = 0;
+        if (s === state && Math.abs(measureWidth(s.svg) - s.lastWidth) > 1) render(s);
+      });
+    };
+    if (typeof global.ResizeObserver === 'function') {
+      s.resizeObserver = new global.ResizeObserver(s.onResize);
+      s.resizeObserver.observe(s.svg.parentElement || s.svg);
+    } else global.addEventListener('resize', s.onResize);
+    s.onMedia = event => {
+      s.reducedMotion = Boolean(event.matches);
+      s.svg.classList.toggle('yn-paused', s.paused || s.reducedMotion);
+    };
+    if (media && media.addEventListener) media.addEventListener('change', s.onMedia);
+    return global.YibingNetwork;
+  }
+  function setRows(rows) {
+    if (!state) return;
+    state.rows = normalizeRows(rows);
+    state.graph = buildGraph(state.rows);
+    state.selectedKey = null;
+    state.selection = null;
+    render(state);
+    overview(state);
+  }
+  function setPaused(value) {
+    if (!state) return;
+    state.paused = Boolean(value);
+    state.svg.classList.toggle('yn-paused', state.paused || state.reducedMotion);
+  }
+  global.YibingNetwork = { mount, setRows, setPaused };
+})(window);
+
+</script><script>(() => {
+'use strict';
+const D=JSON.parse(document.getElementById('research-data').textContent);
+const ROWS=[...D.rows,...D.pending_rows], BY=new Map(ROWS.map(r=>[r.id,r]));
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v??'未公开').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const external=(url,text)=>/^https?:\/\//.test(url||'')?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(text)}</a>`:esc(text);
+const list=arr=>'<ul>'+arr.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+const SHORT={'YC-01':'Arvin','YC-02':'La Princesa','YC-03':'Atlas Fertilizer','YC-04':'Universal Harvester','YC-05':'Manuchar Philippines','YC-06':'Quimpac Ecuador','YC-07':'Solvesa Ecuador','YC-08':'Saprotan Utama','YC-09':'Meroke Tetap Jaya','YC-10':'Tân Hùng Thái','YC-11':'Thiên Thành Kim','YC-12':'Ngọc Gia Bảo','YC-13':'Quimtia','YC-14':'SBS Philippines','YC-15':'Southland'};
+const short=r=>SHORT[r.id]||r.name;
+const STEPS=['选路线','研究回放','关系网络','客户分类','优先名单','跟进准备','下一步'];
+const GRADE={A:'优先核实',B:'补关键项',C:'先补近期／能力',D:'待补联系'};
+const media=matchMedia('(prefers-reduced-motion: reduce)');
+let step=0,route='all',grade='A',selected='YC-01',paperMode='brief',paused=media.matches,networkMode='example';
+let replayIndex=0,replayRows=[],runTimer=null,typeTimer=null,typeIndex=0,fullPaper='',networkMounted=false,liveDialogTrigger=null;
+function active(){return ROWS.filter(r=>route==='all'||r.line===route);}
+function stats(rows){const main=rows.filter(r=>r.list_status!=='待补联系'),hold=rows.filter(r=>r.list_status==='待补联系');return {main:main.length,hold:hold.length,records:rows.reduce((n,r)=>n+r.trade_records.length,0),mainRecords:main.reduce((n,r)=>n+r.trade_records.length,0),countries:new Set(rows.map(r=>r.country)).size,a:main.filter(r=>r.priority==='A').length};}
+function matches(r,q='',country='',tier='all'){const terms=q.trim().toLowerCase().split(/\s+/).filter(Boolean);return (tier==='all'||r.priority===tier)&&(!country||r.country===country)&&terms.every(x=>JSON.stringify(r).toLowerCase().includes(x));}
+function filtered(){return active().filter(r=>matches(r,$('#search').value,$('#country').value,grade));}
+function stopRun(){clearInterval(runTimer);runTimer=null;}
+function stopTyping(){clearInterval(typeTimer);typeTimer=null;}
+function updateNav(){ $$('#nav button').forEach((b,i)=>{b.classList.toggle('on',i===step);b.setAttribute('aria-current',i===step?'step':'false');});$('#prev').disabled=step===0;$('#nextBtn').disabled=step===6;$('#stepCount').textContent=`${String(step+1).padStart(2,'0')} / 07`;$('#progress').style.width=((step+1)/7*100)+'%';}
+function go(i,focus=false){stopRun();stopTyping();step=Math.max(0,Math.min(6,i));$$('section.stage').forEach((s,k)=>{s.hidden=k!==step;s.classList.toggle('on',k===step);});updateNav();if(step===1)startRun();if(step===2)drawNetwork();if(step===3)drawSegments();if(step===4)drawCards();if(step===5)drawPreparation();if(step===6)drawSummary();const heading=$(`#s${step} h2`)||$('#stageTitle');if(!heading.id)heading.id='stageTitle'+step;$('.skip').href='#'+heading.id;if(focus)heading.focus({preventScroll:true});}
+function setRoute(value){route=value;$('#route').value=value;$('#country').value='';$('#search').value='';if(!active().some(r=>r.id===selected))selected=active()[0].id;if(step>0)go(step);}
+function setPaused(value){paused=value;document.body.classList.toggle('paused',paused);$('#motion').textContent=paused?'播放':'暂停';$('#motion').setAttribute('aria-pressed',String(paused));$('#motion').title=paused?'恢复动效':'暂停动效';if(paused){stopRun();stopTyping();}else{if(step===1)resumeRun();if(step===5)resumeTyping();}if(networkMounted)window.YibingNetwork.setPaused(paused);updateRunStatus();}
+$('#nav').innerHTML=STEPS.map((s,i)=>`<button type="button" data-step="${i}"><span class="n">${i+1}</span>${s}</button>`).join('');
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-step]');if(b)go(+b.dataset.step,true);});
+$('#prev').onclick=()=>go(step-1,true);$('#nextBtn').onclick=()=>go(step+1,true);$('#route').onchange=e=>setRoute(e.target.value);$('#motion').onclick=()=>setPaused(!paused);media.addEventListener('change',e=>{setPaused(e.matches);if(e.matches){if(step===1)completeRun();if(step===5)finishTyping();}});
+document.addEventListener('click',e=>{const start=e.target.closest('[data-start]'),next=e.target.closest('[data-go]');if(start){setRoute(start.dataset.start);go(1,true);}else if(next){go(+next.dataset.go,true);}});
+document.addEventListener('keydown',e=>{if($('#detail').open||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.target.closest('input,select,textarea,[contenteditable="true"],svg'))return;if(e.key==='ArrowRight'){e.preventDefault();go(step+1,true);}if(e.key==='ArrowLeft'){e.preventDefault();go(step-1,true);}});
+// Local research replay. No network calls or asynchronous sourcing is implied.
+function runLines(rows){const s=stats(rows);const missing=rows.filter(r=>r.supplier_status==='同笔供方待补').length;return [
+['拆分产品路线',route==='纯碱'?'轻质、重质与食品级需求分别保留。':route==='硫酸铵'?'capro、焦化来源、结晶与颗粒分别核。':'纯碱分轻／重质；硫酸铵分来源、形态和运输方式。'],
+[`整理已取得的 ${s.records} 条采购记录`,'保存买方、供方、货品、日期、编号与原始数量口径；不是原始提单扫描件数量。'],
+['只在同笔记录里关联供方',`${missing} 家的同笔供方仍缺，不补猜名称，也不把货描中的厂家直接当出口商。`],
+['把关系按证据强弱分开',route==='硫酸铵'?'已核单段供货关系；同供方另一新买家的两跳仍未完成。':'XING HUA连接Quimpac与Solvesa的线索仅索引可见，原票仍待复核。'],
+[`核对 ${rows.filter(r=>r.contacts.length).length} 家公开联系入口`,'记录官网来源和角色；历史宣传册、索引邮箱及总机不等于已验证采购人。'],
+['对照规格与交付门槛','工业／食品级不能混用；结晶／颗粒和袋装／散装需要我方提供真实供货文件。'],
+[`排出 ${s.a} 家优先核实对象`,`主名单 ${s.main} 家${s.hold?'，另 '+s.hold+' 家待补联系':''}。全部当前需求未确认，未联系。`]
+];}
+function startRun(){stopRun();replayIndex=0;const rows=active();const s=stats(rows);replayRows=rows.flatMap(r=>r.trade_records.map(t=>({r,t}))).sort((a,b)=>a.t.date.localeCompare(b.t.date));$('#runSub').textContent=`${route==='all'?'纯碱 + 硫酸铵':route} · ${s.main} 家主名单${s.hold?' + '+s.hold+' 家待补联系':''} · 回放 ${s.records} 条已整理记录。`;
+$('#log').innerHTML=runLines(rows).map(([a,b],i)=>`<li><span class="t">0${i+1}</span>${esc(a)}<span class="why">${esc(b)}</span></li>`).join('');$('#feedRows').innerHTML='';$('#cRecords').textContent='0';$('#cBuyers').textContent='0';$('#cGrade').textContent='—';if(media.matches){completeRun();}else if(!paused){runTick();resumeRun();}updateRunStatus();}
+function runTick(){if(replayIndex>=replayRows.length){stopRun();updateRunStatus();return;}replayIndex++;renderRun();if(replayIndex===replayRows.length)stopRun();updateRunStatus();}
+function dateLabel(t){const type=t.date_type||'';if(/缴费/.test(type))return '缴费日';if(/Arrival Date|^平台到港日/.test(type))return /冲突|待复核/.test(type+' '+(t.limitations||''))?'到港列·待核':'平台到港日';if(/^菲律宾海关到货公告表ARRIVAL/.test(type))return '海关到货日';if(/Sample Shipment/.test(type))return '平台样本日';return '记录日期';}
+function renderRun(){const shown=replayRows.slice(0,replayIndex),p=replayIndex/(replayRows.length||1);$('#cRecords').textContent=replayIndex;$('#cBuyers').textContent=new Set(shown.map(x=>x.r.id)).size;$('#cGrade').textContent=p===1?stats(active()).a:'—';$$('#log li').forEach((li,i)=>li.classList.toggle('show',i<Math.ceil(p*7)));$('#feedRows').innerHTML=shown.slice(-7).reverse().map(({r,t})=>`<div class="row" role="button" tabindex="0" data-open="${r.id}" aria-label="查看${esc(short(r))}的采购记录"><span>${esc(t.date)}<small>${esc(dateLabel(t))}</small></span><span class="bn" title="${esc(r.name)}">${esc(short(r))}</span><span class="p">${esc(t.product)}</span><span>${esc(t.evidence_type.replace('公开','').replace('待核',''))}</span></div>`).join('');}
+function resumeRun(){if(step!==1||paused||runTimer||replayIndex>=replayRows.length)return;runTimer=setInterval(runTick,220);updateRunStatus();}
+function completeRun(){stopRun();replayIndex=replayRows.length;renderRun();updateRunStatus();}
+function updateRunStatus(){if(!$('#runStatus'))return;$('#runStatus').innerHTML=replayRows.length&&replayIndex===replayRows.length?'<span>回放完成。</span> 下页查看真实供货关系。':paused?'回放已暂停；点击顶部“播放”继续。':'正在依次展示本地研究结果；可随时切换步骤。';}
+$('#replay').onclick=()=>startRun();$('#feedRows').onclick=e=>{const b=e.target.closest('[data-open]');if(b)openDetail(b.dataset.open,b);};$('#feedRows').onkeydown=e=>{if(['Enter',' '].includes(e.key)){const b=e.target.closest('[data-open]');if(b){e.preventDefault();openDetail(b.dataset.open,b);}}};
+function drawNetwork(){const hasExample=active().some(r=>r.id==='YC-06');const effective=hasExample?networkMode:'all';const shown=effective==='example'?active().filter(r=>['YC-06','YC-07'].includes(r.id)):active();$$('[data-net]').forEach(b=>{b.classList.toggle('on',b.dataset.net===effective);b.setAttribute('aria-pressed',String(b.dataset.net===effective));b.disabled=b.dataset.net==='example'&&!hasExample;});$('#networkHint').textContent=effective==='example'?'先看共用供方连接的两家买方：两条线都只有索引证据，Solvesa轻／重质待核。':'显示当前路线全部已整理关系。图内可滚动；没有具名供方的记录放在下方待补区。';if(!networkMounted){window.YibingNetwork.mount({svg:$('#graph'),side:$('#networkSide'),rows:shown,onOpen:id=>openDetail(id),paused});networkMounted=true;}else{window.YibingNetwork.setRows(shown);window.YibingNetwork.setPaused(paused);}$('#graph').parentElement.scrollTop=0;}
+$('#networkModes').onclick=e=>{const b=e.target.closest('[data-net]');if(b&&!b.disabled){networkMode=b.dataset.net;drawNetwork();}};
+const SEGMENTS=[
+{title:'工业纯碱进口分销',ids:['YC-01','YC-05','YC-06','YC-07','YC-10','YC-11','YC-12','YC-13'],desc:'先核轻／重质、实际工业用途与新增供方政策。品牌与渠道网络是合作基础，是否接受新的贸易出口商需要确认。',ask:'先问：哪款规格有补充来源空间？'},
+{title:'清洁用品终端工厂',ids:['YC-02'],desc:'La Princesa有明确轻碱货票，含量和25kg包装可对照。进入原料采购与质量审批流程，才能判断替代或补充供应机会。',ask:'先问：现用指标、验收方法和补货窗口？'},
+{title:'食品级纯碱渠道',ids:['YC-14'],desc:'SBS实录为食品级。采购准入入口明确，但我方相应等级与厂源文件尚未证实；工业用途需要另核实际需求。',ask:'先问自己：能否证明所需食品等级？'},
+{title:'capro散装肥料买方',ids:['YC-03','YC-04'],desc:'Atlas和Universal有同品级散装样本。历史批量较大，先核稳定货源、散装装运和资金条件，再问准入。',ask:'先问自己：这类散装交付能否承接？'},
+{title:'印尼肥料品牌渠道',ids:['YC-08','YC-09'],desc:'Meroke与Saprotan有ZA品牌资料及硫酸铵进口线索。先分结晶和颗粒，补同票供方、现行指标与品牌准入。',ask:'先问：需要哪种形态、品级与包装？'},
+{title:'贸易明确，联系待补',ids:['YC-15'],desc:'Southland有capro散装记录，当前官方联系入口和主体资质仍缺。先补公司与联系信息，再进入沟通准备。',ask:'先补：现行主体与可靠官方入口。'}
+];
+function drawSegments(){const ids=new Set(active().map(r=>r.id));$('#segs').innerHTML=SEGMENTS.map(s=>({...s,rows:s.ids.filter(id=>ids.has(id)).map(id=>BY.get(id))})).filter(s=>s.rows.length).map(s=>`<article class="seg"><h3>${esc(s.title)}</h3><div class="stat">${s.rows.length} 家 · ${s.rows.filter(r=>r.priority==='A').length} 家优先核实</div><p>${esc(s.desc)}</p><p><b>${esc(s.ask)}</b></p><div class="who">${s.rows.map(r=>`<button data-open="${r.id}" class="${r.priority}">${esc(short(r))}</button>`).join('')}</div></article>`).join('');}
+$('#segs').onclick=e=>{const b=e.target.closest('[data-open]');if(b)openDetail(b.dataset.open,b);};
+function updateCountries(){const old=$('#country').value;$('#country').innerHTML='<option value="">全部国家</option>'+[...new Set(active().map(r=>r.country))].sort().map(c=>`<option>${esc(c)}</option>`).join('');if([...$('#country').options].some(o=>o.value===old))$('#country').value=old;}
+function drawGradeTabs(){const count=Object.fromEntries(['A','B','C','D'].map(g=>[g,active().filter(r=>r.priority===g).length]));$('#gradeTabs').innerHTML=[['A','优先核实'],['B','补关键项'],['C','先补近期／能力'],['D','待补联系'],['all','全部企业']].map(([g,l])=>`<button data-grade="${g}" class="${grade===g?'on':''}" aria-pressed="${grade===g}">${l}<span>${g==='all'?active().length:count[g]}</span></button>`).join('');}
+function summaryProduct(r){if(r.id==='YC-02')return '轻质纯碱 ≥99.2% · 25kg袋装';if(r.id==='YC-14')return '食品级轻质纯碱 · 等级待证';if(['YC-03','YC-04','YC-15'].includes(r.id))return '己内酰胺级硫酸铵 · 散装';if(r.id==='YC-08')return '硫酸铵 · 该票形态与来源待核';if(r.id==='YC-09')return 'MerokeZA · 结晶方向';if(['YC-06','YC-13'].includes(r.id))return '重质纯碱';if(r.id==='YC-07')return '碳酸钠 · 轻／重质待核';if(['YC-01','YC-11'].includes(r.id))return '轻质 / 重质纯碱分开核';return '轻质纯碱 · 工业路线';}
+function drawCards(){updateCountries();drawGradeTabs();const rows=filtered();$('#cardsTitle').textContent=grade==='A'?`先核实这 ${rows.length} 家`:grade==='all'?`全部 ${rows.length} 家研究对象`:`${GRADE[grade]} · ${rows.length} 家`;$('#result').textContent=`${route==='all'?'两条产品线':route} · 当前显示 ${rows.length} 家 · 全部采购需求未确认，未联系`;$('#cards').innerHTML=rows.length?rows.map(r=>{const t=r.trade_records[0];const evidence=r.evidence_types.join(' / ');return `<article class="card" id="card-${r.id}"><div class="top"><h3>${esc(short(r))}</h3><span class="grade ${r.priority}">${r.priority} · ${esc(GRADE[r.priority])}</span></div><div class="meta">${esc(r.country)} · ${esc(r.line)}<br>${esc(r.role)}</div><div class="reasons"><span class="hot">${esc(summaryProduct(r))}</span><span>${esc(r.batch_note)}</span></div><p class="compact">${esc(r.reason)}</p><dl><dt>先看哪条证据</dt><dd>${esc(t.date)} · ${esc(t.date_type)}<br>${esc(t.quantity??'数量未公开')}</dd><dt>最先要补什么</dt><dd>${esc(r.fit_gaps[0])}</dd></dl><div class="ev">${esc(evidence)}<br>${r.contacts.length?'公开联系入口已收录；角色及有效性待核。':'暂无已核官方联系入口。'}</div><div class="actions"><button class="ghost go" data-detail="${r.id}">证据与联系 ↗</button><button class="ghost go" data-prepare="${r.id}">跟进准备 →</button></div></article>`;}).join(''):'<div class="empty">没有符合条件的企业。可切换优先级或重置筛选。</div>';$('#exportCards').disabled=!rows.length;}
+$('#gradeTabs').onclick=e=>{const b=e.target.closest('[data-grade]');if(b){grade=b.dataset.grade;drawCards();}};$('#search').oninput=drawCards;$('#country').onchange=drawCards;$('#resetFilters').onclick=()=>{grade='all';$('#search').value=$('#country').value='';drawCards();};$('#cards').onclick=e=>{const d=e.target.closest('[data-detail]'),p=e.target.closest('[data-prepare]');if(d)openDetail(d.dataset.detail,d);if(p)prepare(p.dataset.prepare);};
+function contactHTML(r){if(!r.contacts.length)return '<p>尚未取得可靠官方联系入口。先补主体和联系方式。</p>';return r.contacts.filter(c=>!/^https?:/.test(c.value)).map(c=>`<div class="contact-item"><b>${esc(c.value)}</b><p>${esc(c.note)}</p>${external(c.source_url,'联系来源 ↗')}</div>`).join('');}
+function recordHTML(t,i){return `<article class="record"><div class="record-top"><b>0${i+1} · ${esc(t.date)}</b><span class="badge">${esc(t.evidence_type)}</span></div><dl><dt>日期口径</dt><dd>${esc(t.date_type)}</dd><dt>货品</dt><dd>${esc(t.product)}</dd><dt>贸易方向</dt><dd>${esc(t.supplier??'供方未公开')} → ${esc(t.buyer)}</dd><dt>数量</dt><dd>${esc(t.quantity??'未公开')}</dd><dt>提单 / B/L</dt><dd>${esc(t.bol??'未公开')}${t.declaration_number?'<br>申报号：'+esc(t.declaration_number):''}${t.entry_number?'<br>报关条目：'+esc(t.entry_number):''}</dd><dt>可见范围</dt><dd>${esc(t.access)}</dd></dl><p class="limitations">${esc(t.limitations)}</p>${external(t.source_url,'打开采购记录来源 ↗')}</article>`;}
+function openDetail(id,trigger){const r=BY.get(id);if(!r)return;liveDialogTrigger=trigger||document.activeElement;$('#detailKicker').textContent=r.id+' / '+r.priority+' · '+GRADE[r.priority];$('#detailTitle').textContent=r.name;$('#detailMeta').textContent=`${r.country} · ${r.role} · ${r.batch_note} · 未联系`;
+$('#detailBody').innerHTML=`<div class="dialoggrid"><div><h3>为什么这样排</h3><p>${esc(r.reason)}</p><h3>具体下一步</h3><p>${esc(r.next_action)}</p><button class="next" data-prepare="${r.id}">打开这家企业的跟进准备 →</button></div><div><h3>公开联系入口</h3>${contactHTML(r)}<p class="note">以上为公开公司信息，未测试接通或发送消息；采购角色需确认。</p></div></div><div class="warning">历史采购不等于当前采购需求。优先级是核实顺序，产品适配、准入、交付和利润仍待业务确认。</div><div class="dialoggrid"><div><h3>产品适配缺口</h3>${list(r.fit_gaps)}</div><div><h3>待补的信息</h3>${list(r.missing_info)}</div></div><h3>本轮实际反查路径</h3><p>${esc(r.discovery_path)}</p><h3>全部 ${r.trade_records.length} 条采购记录</h3>${r.trade_records.map(recordHTML).join('')}<h3>企业身份与完整来源</h3><p>${esc(r.business)}</p><ol>${[...new Set([...r.source_urls,...r.official_urls])].map((u,i)=>'<li>'+external(u,'来源 '+(i+1)+' · '+new URL(u).hostname)+'</li>').join('')}</ol>`;
+if(!$('#detail').open)$('#detail').showModal();$('#detail').scrollTop=0;$('#closeDetail').focus({preventScroll:true});}
+function closeDetail(){if($('#detail').open)$('#detail').close();if(liveDialogTrigger?.isConnected)liveDialogTrigger.focus({preventScroll:true});}
+$('#closeDetail').onclick=closeDetail;$('#detail').addEventListener('click',e=>{const b=e.target.closest('[data-prepare]');if(b){$('#detail').close();prepare(b.dataset.prepare);}else if(e.target===$('#detail')){const rect=$('#detail').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)closeDetail();}});
+function prepare(id){selected=id;go(5,true);}
+function productEnglish(r){if(r.line==='硫酸铵')return ['YC-03','YC-04','YC-09','YC-15'].includes(r.id)?'caprolactam-source ammonium sulphate':'ammonium sulphate';if(r.id==='YC-14')return 'soda ash, with the required food-grade qualification to be verified';if(['YC-06','YC-13'].includes(r.id))return 'dense soda ash';if(['YC-02','YC-05','YC-10','YC-12'].includes(r.id))return 'light soda ash';return 'light or dense soda ash, subject to specification confirmation';}
+function brief(r){const t=r.trade_records[0];return `${short(r)}｜核实提纲\n\n目的\n先确认当前采购与新增供方条件，不能把历史记录当作询盘。\n\n已知线索\n${t.date}（${t.date_type}）\n${t.product}\n${t.quantity??'该条数量未公开'}\n证据层级：${t.evidence_type}\n\n第一步\n${r.next_action}\n\n向买方确认\n${r.missing_info.slice(0,4).map((x,i)=>(i+1)+'. '+x).join('\n')}\n\n我方先准备\n${r.fit_gaps.slice(0,3).map((x,i)=>(i+1)+'. '+x).join('\n')}\n\n本次沟通希望得到\n实际负责部门、现行规格／验收文件，以及是否有下一采购窗口。未确认前不承诺价格、认证或交期。`;}
+function letter(r){if(!r.contacts.length)return '暂不生成联系草稿。\n\n尚未取得可核实的官方联系方式。先核当前法律主体、资质与联系入口，再准备对外沟通。\n\n已取得的采购记录仍保留在企业详情中。';const p=productEnglish(r);return `Subject: Enquiry about ${r.line==='纯碱'?'soda ash':'ammonium sulphate'} supplier qualification\n\nDear ${short(r)} team,\n\nMy name is [your name], from Guangzhou Yi Bing Chemical Co., Ltd. Could you please direct me to the team responsible for sourcing ${p}?\n\nWe would like to understand whether you currently purchase this product and whether you are considering additional supply sources.\n\nIf relevant, could you share the required specification and product form, packing or bulk-shipment requirements, and your supplier qualification process?\n\nBefore discussing an offer, we would need to compare your requirements with our documented product and delivery capabilities.\n\n${r.id==='YC-14'?'Food-grade qualification and the required manufacturer documents would need to be confirmed before any proposal.\n\n':''}${['YC-03','YC-04'].includes(r.id)?'Bulk supply volume, shipment arrangements and commercial terms would also need to be confirmed before any commitment.\n\n':''}Thank you for directing this enquiry to the appropriate colleague.\n\nBest regards,\n[your name]\nGuangzhou Yi Bing Chemical Co., Ltd.\n[your verified contact details]`;}
+function drawPreparation(){stopTyping();const rows=active();if(!rows.some(r=>r.id===selected))selected=rows[0].id;const r=BY.get(selected);$('#pick').innerHTML=rows.map(x=>`<button data-pick="${x.id}" class="${x.id===selected?'on':''}" aria-pressed="${x.id===selected}">${esc(short(x))}<small>${esc(x.country)} · ${x.priority} ${esc(GRADE[x.priority])}</small></button>`).join('');$('#facts').innerHTML=`<h3>依据与切入点</h3><p>${esc(r.reason)}</p><h3>该找谁</h3><p>原料／进口采购与质量审批负责人。现有入口的具体职务仍待确认。</p><h3>公开入口与角色</h3>${contactHTML(r)}<button class="ghost" data-facts-detail="${r.id}">展开全部证据 ↗</button>`;$$('[data-paper]').forEach(b=>{b.classList.toggle('on',b.dataset.paper===paperMode);b.setAttribute('aria-pressed',String(b.dataset.paper===paperMode));});$('#paper').classList.toggle('english',paperMode==='letter');fullPaper=paperMode==='brief'?brief(r):letter(r);typeIndex=0;$('#paper').textContent='';$('#copyStatus').textContent='';if(paused||media.matches)finishTyping();else resumeTyping();}
+function typeTick(){typeIndex=Math.min(fullPaper.length,typeIndex+(paperMode==='letter'?28:18));$('#paper').textContent=fullPaper.slice(0,typeIndex);if(typeIndex===fullPaper.length)stopTyping();}
+function resumeTyping(){if(step!==5||paused||typeTimer||typeIndex>=fullPaper.length)return;typeTimer=setInterval(typeTick,24);}
+function finishTyping(){stopTyping();typeIndex=fullPaper.length;$('#paper').textContent=fullPaper;}
+$('#pick').onclick=e=>{const b=e.target.closest('[data-pick]');if(b){selected=b.dataset.pick;drawPreparation();}};$$('[data-paper]').forEach(b=>b.onclick=()=>{paperMode=b.dataset.paper;drawPreparation();});$('#facts').onclick=e=>{const b=e.target.closest('[data-facts-detail]');if(b)openDetail(b.dataset.factsDetail,b);};$('#finishTyping').onclick=finishTyping;
+$('#copyPaper').onclick=async()=>{finishTyping();try{if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');await navigator.clipboard.writeText(fullPaper);$('#copyStatus').textContent='已复制，尚未发送。';}catch{const sel=window.getSelection(),range=document.createRange();range.selectNodeContents($('#paper'));sel.removeAllRanges();sel.addRange(range);$('#copyStatus').textContent='已选中文本，请按 Ctrl/Cmd+C 复制。';}};
+function drawSummary(){const rows=active(),s=stats(rows);$('#summarySub').textContent=`${route==='all'?'当前全部研究':route+'研究'}：${s.main} 家主名单、${s.mainRecords} 条记录${s.hold?'；另 '+s.hold+' 家待补联系、'+(s.records-s.mainRecords)+' 条记录':''}。各条日期、数量口径与证据缺口均保留。`;
+$('#funnel').innerHTML=[[s.records,'条公开记录','包含平台样本与索引'],[s.main,'家主名单','另 '+s.hold+' 家待补联系'],[s.a,'家优先核实','规格与交付仍需确认'],[0,'家已确认当前需求','尚未对外联系']].map(([n,l,note],i)=>`<div class="${i===2?'hl':''}"><b>${n}</b><span>${l}</span><small>${note}</small></div>`).join('');$('#queue').innerHTML=rows.filter(r=>r.priority==='A').map(r=>`<button data-summary-pick="${r.id}">${esc(short(r))} →</button>`).join('')||'<p>当前路线没有A类对象，先补证据与关键条件。</p>';}
+$('#queue').onclick=e=>{const b=e.target.closest('[data-summary-pick]');if(b)prepare(b.dataset.summaryPick);};
+function csvcell(v){let s=typeof v==='object'?JSON.stringify(v):String(v??'');if(/^[\s\u0000-\u001f]*[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
+$('#exportCards').onclick=()=>{const rs=filtered(),keys=['id','name','country','line','priority','trade_records','contacts','reason','fit_gaps','missing_info','next_action','source_urls'];const labels=['编号','企业','国家','产品线','核实优先级','采购记录与来源','联系方式与来源','排序理由','适配缺口','缺的信息','下一步','来源'];const text=[labels,...rs.map(r=>keys.map(k=>r[k]))].map(r=>r.map(csvcell).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob(['\ufeff'+text],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='Yibing-演示筛选名单.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+function applyHash(){const id=decodeURIComponent(location.hash.slice(1));if(BY.has(id)){const r=BY.get(id);if(route!=='all'&&route!==r.line)setRoute(r.line);grade='all';go(4);openDetail(id);}}
+window.addEventListener('hashchange',applyHash);
+window.addEventListener('pagehide',()=>{stopRun();stopTyping();});
+// Expose pure data helpers to the local static verification harness.
+window.YibingDemo={stats,matches,dateLabel,segments:SEGMENTS,brief,letter,go,setRoute,openDetail,closeDetail,prepare,getState:()=>({step,route,grade,selected,paused,replayIndex})};
+setPaused(paused);go(0);applyHash();
+})();
+</script></body></html>
